@@ -7,7 +7,7 @@ const envSchema = z.object({
 
 // Validate environment variables
 const env = envSchema.parse({
-  VITE_API_URL: import.meta.env.VITE_API_URL,
+  VITE_API_URL: import.meta.env.VITE_API_URL || 'http://localhost:5173/api',
   VITE_STRIPE_PUBLIC_KEY: import.meta.env.VITE_STRIPE_PUBLIC_KEY
 });
 
