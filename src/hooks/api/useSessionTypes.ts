@@ -4,16 +4,17 @@ import {
   createSessionType, 
   updateSessionType, 
   deleteSessionType 
-} from '@/lib/api/session-types';
+} from '@/lib/api/sessions';
 import { useToast } from '@/hooks/use-toast';
+import type { SessionType } from '@/types/session';
 
-export function useSessionTypes(mentorId: string) {
+export function useSessionTypes() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const query = useQuery({
-    queryKey: ['session-types', mentorId],
-    queryFn: () => getSessionTypes(mentorId)
+    queryKey: ['session-types'],
+    queryFn: getSessionTypes
   });
 
   const createMutation = useMutation({
@@ -25,17 +26,18 @@ export function useSessionTypes(mentorId: string) {
         description: 'Session type created successfully',
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create session type',
+        description: error.message || 'Failed to create session type',
         variant: 'destructive',
       });
     }
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => updateSessionType(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<SessionType> }) => 
+      updateSessionType(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['session-types'] });
       toast({
@@ -43,10 +45,10 @@ export function useSessionTypes(mentorId: string) {
         description: 'Session type updated successfully',
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update session type',
+        description: error.message || 'Failed to update session type',
         variant: 'destructive',
       });
     }
@@ -61,10 +63,10 @@ export function useSessionTypes(mentorId: string) {
         description: 'Session type deleted successfully',
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete session type',
+        description: error.message || 'Failed to delete session type',
         variant: 'destructive',
       });
     }
