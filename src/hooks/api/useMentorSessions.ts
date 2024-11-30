@@ -18,17 +18,21 @@ export function useMentorSessions() {
 
   const sessionsQuery = useQuery({
     queryKey: ['mentor-sessions'],
-    queryFn: getMentorSessions
+    queryFn: getMentorSessions,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 3
   });
 
   const statsQuery = useQuery({
     queryKey: ['session-stats'],
-    queryFn: getSessionStats
+    queryFn: getSessionStats,
+    staleTime: 1000 * 60 * 5 // 5 minutes
   });
 
   const sessionTypesQuery = useQuery({
     queryKey: ['session-types'],
-    queryFn: getSessionTypes
+    queryFn: getSessionTypes,
+    staleTime: 1000 * 60 * 5 // 5 minutes
   });
 
   const createSessionTypeMutation = useMutation({
