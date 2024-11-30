@@ -7,6 +7,7 @@ import Hero from '@/components/home/Hero';
 import Testimonials from '@/components/home/Testimonials';
 import CTASection from '@/components/home/CTASection';
 import { useTranslation } from '@/hooks/useTranslation';
+import { translations } from '@/lib/translations';
 
 const howItWorksSteps = [
   {
@@ -98,7 +99,9 @@ export default function Home() {
       {/* Categories Section */}
       <section className="py-12 md:py-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">Browse by Category</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">
+            {language === 'bn' ? translations.bn.categories.title : 'Browse by Category'}
+          </h2>
           <CategoryGrid />
         </div>
       </section>
