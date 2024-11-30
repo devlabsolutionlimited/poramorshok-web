@@ -1,40 +1,14 @@
 import axios from 'axios';
-
-const API_URL = 'http://127.0.0.1:5173/api';
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface RegisterData {
-  name: string;
-  email: string;
-  password: string;
-  role: 'student' | 'mentor';
-}
-
-export interface AuthResponse {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  };
-  token: string;
-}
-
-// Configure axios defaults
-axios.defaults.baseURL = API_URL;
-axios.defaults.withCredentials = true;
+import api from './api';
+import type { LoginCredentials, RegisterData, AuthResponse, User } from '@/types/auth';
 
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   try {
-    const response = await axios.post('/auth/login', credentials);
+    const response = await api.post('/auth/login', credentials);
     const { token } = response.data;
     
-    // Set token in axios defaults
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // Set token in axios defaults and localStorage
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     localStorage.setItem('token', token);
     
     return response.data;
@@ -48,11 +22,11 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
 
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
   try {
-    const response = await axios.post('/auth/register', data);
+    const response = await api.post('/auth/register', data);
     const { token } = response.data;
     
-    // Set token in axios defaults
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // Set token in axios defaults and localStorage
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     localStorage.setItem('token', token);
     
     return response.data;
@@ -64,18 +38,30 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
   }
 };
 
-export const getCurrentUser = async (): Promise<AuthResponse['user']> => {
+export const getCurrentUser = async (): Promise<User> => {
   try {
     const token = localStorage.getItem('token');
     if (!token) {
       throw new Error('No token found');
     }
 
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    const response = await axios.get('/auth/me');
+    // Set token in axios defaults
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    
+    const response = await api.get('/auth/me');
     return response.data.user;
   } catch (error) {
     localStorage.removeItem('token');
+    delete api.defaults.headers.common['Authorization'];
     throw new Error('Failed to get current user');
   }
+};
+
+export const logout = () => {
+  localStorage.removeItem('token');
+  delete api.defaults.headers.common['Authorization'];
+};
+
+export const isAuthenticated = (): boolean => {
+  return !!localStorage.getItem('token');
 };
