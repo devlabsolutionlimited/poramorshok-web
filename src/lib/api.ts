@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL ='http://127.0.0.1:5173/api';;
 
 if (!API_URL) {
   throw new Error('VITE_API_URL environment variable is not defined');
@@ -10,7 +10,8 @@ const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  withCredentials : true
 });
 
 // Request interceptor

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { LoginCredentials, RegisterData, AuthResponse } from '@/types/auth';
 
-const API_URL = '';
+const API_URL ='http://127.0.0.1:5173/api';
 
 // Configure axios defaults
 axios.defaults.baseURL = API_URL;
