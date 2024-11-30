@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { login as loginApi, register as registerApi, getCurrentUser } from '@/lib/auth';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { login as loginApi, register as registerApi, getCurrentUser, logout as logoutApi } from '@/lib/auth';
 import type { LoginCredentials, RegisterData, User } from '@/types/auth';
 
 interface AuthContextType {
@@ -15,6 +16,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const initAuth = async () => {
@@ -24,30 +27,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const user = await getCurrentUser();
           setUser(user);
         } catch (error) {
-          localStorage.removeItem('token');
+          logoutApi();
+          navigate('/login', { 
+            replace: true,
+            state: { from: location }
+          });
         }
       }
       setLoading(false);
     };
 
     initAuth();
-  }, []);
+  }, [navigate, location]);
 
   const login = async (credentials: LoginCredentials) => {
     const response = await loginApi(credentials);
-    localStorage.setItem('token', response.token);
     setUser(response.user);
+    
+    // Navigate to the protected page the user tried to visit or dashboard
+    const from = (location.state as any)?.from?.pathname || '/dashboard';
+    navigate(from, { replace: true });
   };
 
   const register = async (data: RegisterData) => {
     const response = await registerApi(data);
-    localStorage.setItem('token', response.token);
     setUser(response.user);
+    navigate('/dashboard', { replace: true });
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    logoutApi();
     setUser(null);
+    navigate('/login', { replace: true });
   };
 
   return (
