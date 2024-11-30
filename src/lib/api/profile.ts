@@ -1,4 +1,4 @@
-import api from '@/lib/http';
+import api from '@/lib/api';
 import type { MentorProfile, SocialLinks, Education } from '@/types/mentor';
 
 export const getMentorProfile = async () => {
