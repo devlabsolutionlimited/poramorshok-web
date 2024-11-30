@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import type { MentorProfile, SocialLinks, Education } from '@/types/mentor';
+import type { MentorProfile } from '@/types/mentor';
 
 export const getMentorProfile = async () => {
   const response = await api.get('/api/mentor/profile');
@@ -16,12 +16,12 @@ export const updateExpertise = async (data: { expertise: string[]; languages: st
   return response.data;
 };
 
-export const updateEducation = async (data: { education: Education[] }) => {
+export const updateEducation = async (data: { education: MentorProfile['education'] }) => {
   const response = await api.put('/api/mentor/profile/education', data);
   return response.data;
 };
 
-export const updateSocialLinks = async (data: { socialLinks: SocialLinks[] }) => {
+export const updateSocialLinks = async (data: { socialLinks: MentorProfile['socialLinks'] }) => {
   const response = await api.put('/api/mentor/profile/social', data);
   return response.data;
 };
