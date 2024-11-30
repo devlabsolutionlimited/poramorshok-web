@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -27,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
 
 const sessionTypeSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters'),
@@ -42,17 +40,16 @@ const sessionTypeSchema = z.object({
 interface CreateSessionTypeDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSubmit: (data: z.infer<typeof sessionTypeSchema>) => Promise<void>;
+  isSubmitting: boolean;
 }
 
 export default function CreateSessionTypeDialog({
   isOpen,
   onClose,
-  onSuccess
+  onSubmit,
+  isSubmitting
 }: CreateSessionTypeDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
   const form = useForm<z.infer<typeof sessionTypeSchema>>({
     resolver: zodResolver(sessionTypeSchema),
     defaultValues: {
@@ -65,29 +62,9 @@ export default function CreateSessionTypeDialog({
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof sessionTypeSchema>) => {
-    try {
-      setIsSubmitting(true);
-      // API call would go here
-      console.log('Creating session type:', data);
-      
-      toast({
-        title: 'Session Type Created',
-        description: 'Your session type has been created successfully.',
-      });
-      
-      onSuccess();
-      onClose();
-      form.reset();
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to create session type. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleSubmit = async (data: z.infer<typeof sessionTypeSchema>) => {
+    await onSubmit(data);
+    form.reset();
   };
 
   return (
@@ -101,7 +78,7 @@ export default function CreateSessionTypeDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="title"
