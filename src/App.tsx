@@ -8,16 +8,24 @@ import AppRoutes from './routes';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="app-theme">
-        <LanguageProvider>
-          <AuthProvider>
-            <AdminProvider>
-              <Router>
+      <Router>
+        <ThemeProvider defaultTheme="system" storageKey="app-theme">
+          <LanguageProvider>
+            <AuthProvider>
+              <AdminProvider>
                 <div className="min-h-screen flex flex-col bg-background text-foreground">
                   <Navbar />
                   <main className="flex-grow">
@@ -25,11 +33,11 @@ function App() {
                   </main>
                   <Footer />
                 </div>
-              </Router>
-            </AdminProvider>
-          </AuthProvider>
-        </LanguageProvider>
-      </ThemeProvider>
+              </AdminProvider>
+            </AuthProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </Router>
     </QueryClientProvider>
   );
 }
