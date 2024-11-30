@@ -32,6 +32,8 @@ export default function ManageSessions() {
     createSessionType,
     updateSessionType,
     deleteSessionType,
+    updateSessionStatus,
+    addSessionFeedback,
     isCreating,
     isUpdating,
     isDeleting
@@ -65,6 +67,16 @@ export default function ManageSessions() {
 
   const handleDeleteSessionType = async (id: string) => {
     await deleteSessionType(id);
+  };
+
+  const handleUpdateSessionStatus = async (sessionId: string, newStatus: Session['status']) => {
+    await updateSessionStatus({ id: sessionId, status: newStatus });
+    setSelectedSession(null);
+  };
+
+  const handleAddFeedback = async (sessionId: string, feedback: { rating: number; review: string }) => {
+    await addSessionFeedback({ id: sessionId, feedback });
+    setSelectedSession(null);
   };
 
   if (isLoading) {
@@ -159,6 +171,8 @@ export default function ManageSessions() {
         session={selectedSession}
         isOpen={!!selectedSession}
         onClose={() => setSelectedSession(null)}
+        onUpdateStatus={handleUpdateSessionStatus}
+        onAddFeedback={handleAddFeedback}
       />
 
       {/* Create Session Type Dialog */}
