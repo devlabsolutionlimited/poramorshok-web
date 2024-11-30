@@ -6,23 +6,32 @@ import CategoryGrid from '@/components/categories/CategoryGrid';
 import Hero from '@/components/home/Hero';
 import Testimonials from '@/components/home/Testimonials';
 import CTASection from '@/components/home/CTASection';
+import { useTranslation } from '@/hooks/useTranslation';
 
-const howItWorks = [
+const howItWorksSteps = [
   {
     title: 'Create Account',
-    description: 'Sign up and complete your profile to get started'
+    titleBn: 'অ্যাকাউন্ট তৈরি করুন',
+    description: 'Sign up and complete your profile to get started',
+    descriptionBn: 'শুরু করার জন্য সাইন আপ করুন এবং আপনার প্রোফাইল সম্পূর্ণ করুন'
   },
   {
     title: 'Find a Mentor',
-    description: 'Browse through our expert mentors and find the perfect match'
+    titleBn: 'মেন্টর খুঁজুন',
+    description: 'Browse through our expert mentors and find the perfect match',
+    descriptionBn: 'আমাদের বিশেষজ্ঞ মেন্টরদের মধ্যে থেকে আপনার জন্য সঠিক মেন্টর খুঁজে নিন'
   },
   {
     title: 'Book Session',
-    description: 'Schedule a session at your preferred time'
+    titleBn: 'সেশন বুক করুন',
+    description: 'Schedule a session at your preferred time',
+    descriptionBn: 'আপনার পছন্দের সময়ে একটি সেশন শিডিউল করুন'
   },
   {
     title: 'Start Learning',
-    description: 'Join your session and begin your learning journey'
+    titleBn: 'শেখা শুরু করুন',
+    description: 'Join your session and begin your learning journey',
+    descriptionBn: 'আপনার সেশনে যোগ দিন এবং আপনার শেখার যাত্রা শুরু করুন'
   }
 ];
 
@@ -50,6 +59,8 @@ const benefits = [
 ];
 
 export default function Home() {
+  const { t, language } = useTranslation();
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -58,18 +69,24 @@ export default function Home() {
       {/* How It Works Section */}
       <section className="py-12 md:py-20 bg-secondary/50">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">How It Works</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">
+            {language === 'bn' ? 'কিভাবে কাজ করে' : 'How It Works'}
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {howItWorks.map((step, index) => (
+            {howItWorksSteps.map((step, index) => (
               <div key={index} className="relative">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <span className="text-xl font-bold">{index + 1}</span>
                   </div>
-                  <h3 className="text-lg md:text-xl font-semibold mb-2">{step.title}</h3>
-                  <p className="text-muted-foreground">{step.description}</p>
+                  <h3 className="text-lg md:text-xl font-semibold mb-2">
+                    {language === 'bn' ? step.titleBn : step.title}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    {language === 'bn' ? step.descriptionBn : step.description}
+                  </p>
                 </div>
-                {index < howItWorks.length - 1 && (
+                {index < howItWorksSteps.length - 1 && (
                   <ArrowRight className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 text-muted-foreground" />
                 )}
               </div>
