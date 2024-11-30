@@ -32,7 +32,7 @@ interface BasicInfoProps {
 export default function BasicInfo({ profile }: BasicInfoProps) {
   const { updateBasicInfo, updateAvatar, isUpdating } = useMentorProfile();
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof basicInfoSchema>>({
     resolver: zodResolver(basicInfoSchema),
     defaultValues: {
       name: profile.name,
@@ -43,7 +43,7 @@ export default function BasicInfo({ profile }: BasicInfoProps) {
     },
   });
 
-  const handleSubmit = async (data: z.infer<typeof basicInfoSchema>) => {
+  const onSubmit = async (data: z.infer<typeof basicInfoSchema>) => {
     await updateBasicInfo({
       ...data,
       hourlyRate: parseInt(data.hourlyRate, 10),
@@ -83,7 +83,7 @@ export default function BasicInfo({ profile }: BasicInfoProps) {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="name"
