@@ -14,7 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useMentorProfile } from '@/hooks/api/useMentorProfile';
+import type { MentorProfile } from '@/types/mentor';
 
 const educationSchema = z.object({
   education: z.array(z.object({
@@ -25,8 +26,12 @@ const educationSchema = z.object({
   })),
 });
 
-export default function Education({ profile }) {
-  const { toast } = useToast();
+interface EducationProps {
+  profile: MentorProfile;
+}
+
+export default function Education({ profile }: EducationProps) {
+  const { updateEducation, isUpdating } = useMentorProfile();
 
   const form = useForm({
     resolver: zodResolver(educationSchema),
@@ -43,22 +48,14 @@ export default function Education({ profile }) {
     name: 'education',
   });
 
-  const onSubmit = async (data) => {
-    try {
-      // API call would go here
-      console.log('Updating education:', data);
-      
-      toast({
-        title: 'Education Updated',
-        description: 'Your education details have been updated successfully.',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update education details. Please try again.',
-        variant: 'destructive',
-      });
-    }
+  const handleSubmit = async (data: z.infer<typeof educationSchema>) => {
+    const formattedData = {
+      education: data.education.map(edu => ({
+        ...edu,
+        year: parseInt(edu.year, 10),
+      })),
+    };
+    await updateEducation(formattedData);
   };
 
   return (
@@ -68,7 +65,7 @@ export default function Education({ profile }) {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             {fields.map((field, index) => (
               <div key={field.id} className="space-y-4 p-4 border rounded-lg relative">
                 <Button
@@ -117,7 +114,7 @@ export default function Education({ profile }) {
                       <FormItem>
                         <FormLabel>Year</FormLabel>
                         <FormControl>
-                          <Input {...field} type="number" />
+                          <Input {...field} type="number" min="1900" max={new Date().getFullYear()} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -157,7 +154,9 @@ export default function Education({ profile }) {
             </Button>
 
             <div className="flex justify-end">
-              <Button type="submit">Save Changes</Button>
+              <Button type="submit" disabled={isUpdating}>
+                {isUpdating ? 'Saving...' : 'Save Changes'}
+              </Button>
             </div>
           </form>
         </Form>
