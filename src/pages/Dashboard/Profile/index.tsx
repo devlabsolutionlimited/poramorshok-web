@@ -1,64 +1,27 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageLoader } from '@/components/ui/page-loader';
 import BasicInfo from './BasicInfo';
 import Expertise from './Expertise';
 import Education from './Education';
-import Availability from './Availability';
 import SocialLinks from './SocialLinks';
-
-// Mock data fetching
-const fetchMentorProfile = async () => {
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return {
-    name: 'Dr. Rahman Khan',
-    title: 'Senior Software Engineer',
-    company: 'Google',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
-    about: `I'm a senior software engineer at Google with over 10 years of experience in full-stack development. I specialize in building scalable web applications and helping developers grow in their careers.`,
-    expertise: ['Web Development', 'System Design', 'React', 'Node.js', 'Python', 'Machine Learning'],
-    experience: 10,
-    hourlyRate: 2000,
-    languages: ['Bengali', 'English'],
-    education: [
-      {
-        degree: 'MSc in Computer Science',
-        institution: 'BUET',
-        year: 2015,
-        description: 'Specialized in Distributed Systems'
-      },
-      {
-        degree: 'BSc in Computer Science',
-        institution: 'BUET',
-        year: 2013,
-        description: 'Major in Software Engineering'
-      }
-    ],
-    availability: {
-      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
-      timeSlots: [
-        { start: '09:00', end: '17:00' }
-      ],
-      timezone: 'Asia/Dhaka'
-    },
-    socialLinks: {
-      linkedin: 'https://linkedin.com/in/rahmankhan',
-      github: 'https://github.com/rahmankhan',
-      twitter: 'https://twitter.com/rahmankhan',
-      website: 'https://rahmankhan.dev'
-    }
-  };
-};
+import { useMentorProfile } from '@/hooks/api/useMentorProfile';
 
 export default function Profile() {
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ['mentor-profile'],
-    queryFn: fetchMentorProfile
-  });
+  const { profile, isLoading } = useMentorProfile();
 
   if (isLoading) {
     return <PageLoader />;
+  }
+
+  if (!profile) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold">Profile not found</h2>
+        <p className="text-muted-foreground">
+          There was an error loading your profile. Please try again later.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -72,7 +35,6 @@ export default function Profile() {
           <TabsTrigger value="basic">Basic Info</TabsTrigger>
           <TabsTrigger value="expertise">Expertise</TabsTrigger>
           <TabsTrigger value="education">Education</TabsTrigger>
-          <TabsTrigger value="availability">Availability</TabsTrigger>
           <TabsTrigger value="social">Social Links</TabsTrigger>
         </TabsList>
 
@@ -86,10 +48,6 @@ export default function Profile() {
 
         <TabsContent value="education">
           <Education profile={profile} />
-        </TabsContent>
-
-        <TabsContent value="availability">
-          <Availability profile={profile} />
         </TabsContent>
 
         <TabsContent value="social">
