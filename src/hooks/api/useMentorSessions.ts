@@ -5,9 +5,12 @@ import {
   createSessionType,
   updateSessionType,
   deleteSessionType,
-  getSessionTypes
+  getSessionTypes,
+  updateSessionStatus,
+  addSessionFeedback
 } from '@/lib/api/sessions';
 import { useToast } from '@/hooks/use-toast';
+import type { SessionType } from '@/types/session';
 
 export function useMentorSessions() {
   const queryClient = useQueryClient();
@@ -47,7 +50,7 @@ export function useMentorSessions() {
   });
 
   const updateSessionTypeMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => 
+    mutationFn: ({ id, data }: { id: string; data: Partial<SessionType> }) => 
       updateSessionType(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['session-types'] });
@@ -83,6 +86,44 @@ export function useMentorSessions() {
     }
   });
 
+  const updateSessionStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      updateSessionStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mentor-sessions'] });
+      toast({
+        title: 'Success',
+        description: 'Session status updated successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update session status',
+        variant: 'destructive',
+      });
+    }
+  });
+
+  const addSessionFeedbackMutation = useMutation({
+    mutationFn: ({ id, feedback }: { id: string; feedback: { rating: number; review: string } }) =>
+      addSessionFeedback(id, feedback),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mentor-sessions'] });
+      toast({
+        title: 'Success',
+        description: 'Feedback added successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to add feedback',
+        variant: 'destructive',
+      });
+    }
+  });
+
   return {
     sessions: sessionsQuery.data,
     stats: statsQuery.data,
@@ -92,6 +133,8 @@ export function useMentorSessions() {
     createSessionType: createSessionTypeMutation.mutate,
     updateSessionType: updateSessionTypeMutation.mutate,
     deleteSessionType: deleteSessionTypeMutation.mutate,
+    updateSessionStatus: updateSessionStatusMutation.mutate,
+    addSessionFeedback: addSessionFeedbackMutation.mutate,
     isCreating: createSessionTypeMutation.isPending,
     isUpdating: updateSessionTypeMutation.isPending,
     isDeleting: deleteSessionTypeMutation.isPending
