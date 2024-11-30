@@ -6,6 +6,9 @@ import { rateLimit } from 'express-rate-limit';
 import { errorHandler } from '../middleware/errorHandler.js';
 import authRoutes from '../routes/auth.routes.js';
 import mentorRoutes from '../routes/mentor.routes.js';
+import mentorPaymentRoutes from '../routes/mentor.payment.routes.js';
+import mentorProfileRoutes from '../routes/mentor.profile.routes.js';
+import sessionTypeRoutes from '../routes/session.type.routes.js';
 import sessionRoutes from '../routes/session.routes.js';
 import messageRoutes from '../routes/message.routes.js';
 import paymentRoutes from '../routes/payment.routes.js';
@@ -15,10 +18,10 @@ export const configureExpress = () => {
 
   // Security middleware
   app.use(cors({
-    origin:'http://localhost:5173',
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials : true
+    credentials: true
   }));
 
   app.use(helmet({
@@ -63,6 +66,9 @@ export const configureExpress = () => {
   // API Routes
   app.use('/api/auth', authRoutes);
   app.use('/api/mentors', mentorRoutes);
+  app.use('/api/mentor/payments', mentorPaymentRoutes);
+  app.use('/api/mentor/profile', mentorProfileRoutes);
+  app.use('/api/session-types', sessionTypeRoutes);
   app.use('/api/sessions', sessionRoutes);
   app.use('/api/messages', messageRoutes);
   app.use('/api/payments', paymentRoutes);
