@@ -14,55 +14,65 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useMentorProfile } from '@/hooks/api/useMentorProfile';
+import type { MentorProfile } from '@/types/mentor';
 
 const expertiseSchema = z.object({
-  expertise: z.string().min(2, 'Expertise must be at least 2 characters'),
+  expertise: z.array(z.string()).min(1, 'At least one expertise is required'),
   languages: z.array(z.string()).min(1, 'At least one language is required'),
 });
 
-export default function Expertise({ profile }) {
-  const { toast } = useToast();
+interface ExpertiseProps {
+  profile: MentorProfile;
+}
+
+export default function Expertise({ profile }: ExpertiseProps) {
+  const { updateExpertise, isUpdating } = useMentorProfile();
 
   const form = useForm({
     resolver: zodResolver(expertiseSchema),
     defaultValues: {
-      expertise: '',
+      expertise: profile.expertise,
       languages: profile.languages,
     },
   });
 
-  const onSubmit = async (data) => {
-    try {
-      // API call would go here
-      console.log('Updating expertise:', data);
-      
-      toast({
-        title: 'Expertise Updated',
-        description: 'Your expertise has been updated successfully.',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update expertise. Please try again.',
-        variant: 'destructive',
-      });
-    }
+  const handleSubmit = async (data: z.infer<typeof expertiseSchema>) => {
+    await updateExpertise(data);
   };
 
-  const handleAddExpertise = (e) => {
+  const handleAddExpertise = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const value = e.target.value.trim();
-      if (value && !profile.expertise.includes(value)) {
-        profile.expertise.push(value);
-        e.target.value = '';
+      const value = e.currentTarget.value.trim();
+      if (value && !form.getValues('expertise').includes(value)) {
+        const currentExpertise = form.getValues('expertise');
+        form.setValue('expertise', [...currentExpertise, value]);
+        e.currentTarget.value = '';
       }
     }
   };
 
-  const handleRemoveExpertise = (item) => {
-    profile.expertise = profile.expertise.filter(exp => exp !== item);
+  const handleRemoveExpertise = (item: string) => {
+    const currentExpertise = form.getValues('expertise');
+    form.setValue('expertise', currentExpertise.filter(exp => exp !== item));
+  };
+
+  const handleAddLanguage = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const value = e.currentTarget.value.trim();
+      if (value && !form.getValues('languages').includes(value)) {
+        const currentLanguages = form.getValues('languages');
+        form.setValue('languages', [...currentLanguages, value]);
+        e.currentTarget.value = '';
+      }
+    }
+  };
+
+  const handleRemoveLanguage = (item: string) => {
+    const currentLanguages = form.getValues('languages');
+    form.setValue('languages', currentLanguages.filter(lang => lang !== item));
   };
 
   return (
@@ -70,9 +80,9 @@ export default function Expertise({ profile }) {
       <CardHeader>
         <CardTitle>Areas of Expertise</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="expertise"
@@ -85,29 +95,62 @@ export default function Expertise({ profile }) {
                       onKeyDown={handleAddExpertise}
                     />
                   </FormControl>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {field.value.map((item) => (
+                      <Badge key={item} variant="secondary" className="pl-2">
+                        {item}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-1 ml-2"
+                          onClick={() => handleRemoveExpertise(item)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </Badge>
+                    ))}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="flex flex-wrap gap-2">
-              {profile.expertise.map((item) => (
-                <Badge key={item} variant="secondary" className="pl-2">
-                  {item}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-auto p-1 ml-2"
-                    onClick={() => handleRemoveExpertise(item)}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </Badge>
-              ))}
-            </div>
+            <FormField
+              control={form.control}
+              name="languages"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Languages</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Type and press Enter to add"
+                      onKeyDown={handleAddLanguage}
+                    />
+                  </FormControl>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {field.value.map((item) => (
+                      <Badge key={item} variant="secondary" className="pl-2">
+                        {item}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-1 ml-2"
+                          onClick={() => handleRemoveLanguage(item)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="flex justify-end">
-              <Button type="submit">Save Changes</Button>
+              <Button type="submit" disabled={isUpdating}>
+                {isUpdating ? 'Saving...' : 'Save Changes'}
+              </Button>
             </div>
           </form>
         </Form>
