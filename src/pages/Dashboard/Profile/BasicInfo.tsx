@@ -14,7 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useToast } from '@/hooks/use-toast';
+import { useMentorProfile } from '@/hooks/api/useMentorProfile';
+import type { MentorProfile } from '@/types/mentor';
 
 const basicInfoSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -24,8 +25,12 @@ const basicInfoSchema = z.object({
   hourlyRate: z.string().min(1, 'Hourly rate is required'),
 });
 
-export default function BasicInfo({ profile }) {
-  const { toast } = useToast();
+interface BasicInfoProps {
+  profile: MentorProfile;
+}
+
+export default function BasicInfo({ profile }: BasicInfoProps) {
+  const { updateBasicInfo, updateAvatar, isUpdating } = useMentorProfile();
 
   const form = useForm({
     resolver: zodResolver(basicInfoSchema),
@@ -38,21 +43,17 @@ export default function BasicInfo({ profile }) {
     },
   });
 
-  const onSubmit = async (data) => {
-    try {
-      // API call would go here
-      console.log('Updating basic info:', data);
-      
-      toast({
-        title: 'Profile Updated',
-        description: 'Your basic information has been updated successfully.',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update profile. Please try again.',
-        variant: 'destructive',
-      });
+  const handleSubmit = async (data: z.infer<typeof basicInfoSchema>) => {
+    await updateBasicInfo({
+      ...data,
+      hourlyRate: parseInt(data.hourlyRate, 10),
+    });
+  };
+
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      await updateAvatar(file);
     }
   };
 
@@ -67,11 +68,22 @@ export default function BasicInfo({ profile }) {
             <AvatarImage src={profile.avatar} alt={profile.name} />
             <AvatarFallback>{profile.name[0]}</AvatarFallback>
           </Avatar>
-          <Button variant="outline">Change Photo</Button>
+          <div>
+            <input
+              type="file"
+              id="avatar"
+              className="hidden"
+              accept="image/*"
+              onChange={handleAvatarChange}
+            />
+            <Button variant="outline" onClick={() => document.getElementById('avatar')?.click()}>
+              Change Photo
+            </Button>
+          </div>
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="name"
@@ -147,7 +159,9 @@ export default function BasicInfo({ profile }) {
             />
 
             <div className="flex justify-end">
-              <Button type="submit">Save Changes</Button>
+              <Button type="submit" disabled={isUpdating}>
+                {isUpdating ? 'Saving...' : 'Save Changes'}
+              </Button>
             </div>
           </form>
         </Form>
