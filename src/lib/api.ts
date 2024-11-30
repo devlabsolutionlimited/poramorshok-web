@@ -33,8 +33,11 @@ api.interceptors.response.use(
     const { status, data } = error.response;
 
     if (status === 401) {
+      // Clear auth state on 401 responses
       localStorage.removeItem('token');
-      throw new AuthenticationError(data?.message);
+      delete api.defaults.headers.common['Authorization'];
+      window.location.href = '/login';
+      throw new AuthenticationError(data?.message || 'Authentication failed');
     }
 
     throw new ApiError(
