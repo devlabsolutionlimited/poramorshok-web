@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import PrivateRoute from './PrivateRoute';
 import Home from '@/pages/Home';
 import MentorSearch from '@/pages/MentorSearch';
 import MentorProfile from '@/pages/MentorProfile';
@@ -23,7 +23,14 @@ export default function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* Protected Routes */}
-      <Route path="/dashboard/*" element={<Dashboard />} />
+      <Route
+        path="/dashboard/*"
+        element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        }
+      />
 
       {/* Admin Routes */}
       <Route path="/admin/*" element={<AdminRoutes />} />
