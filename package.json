@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "server": "node server/index.js",
-    "nodemon": "nodemon server/index.js"
+    "nodemon": "concurrently \"vite\" \"node server/index.js\""
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
