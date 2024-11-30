@@ -1,6 +1,8 @@
 import { Grid } from 'lucide-react';
 import CategoryCard from './CategoryCard';
 import type { Category } from '@/types/mentor';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translations } from '@/lib/translations';
 
 const categories: Category[] = [
   'Programming',
@@ -18,6 +20,8 @@ interface CategoryGridProps {
 }
 
 export default function CategoryGrid({ counts }: CategoryGridProps) {
+  const { language } = useLanguage();
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {categories.map((category) => (
@@ -25,6 +29,7 @@ export default function CategoryGrid({ counts }: CategoryGridProps) {
           key={category}
           category={category}
           count={counts?.[category]}
+          title={language === 'bn' ? translations.bn.categories.items[category] : category}
         />
       ))}
     </div>
