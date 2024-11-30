@@ -35,113 +35,12 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import ReviewCard from '@/components/reviews/ReviewCard';
 import BookingModal from '@/components/mentors/BookingModal';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import type { Mentor } from '@/types/mentor';
-import type { SessionFeedback } from '@/types/session';
-
-// Mock data for development
-const mockMentor: Mentor = {
-  id: '1',
-  name: 'Dr. Rahman Khan',
-  title: 'Senior Software Engineer',
-  company: 'Google',
-  avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
-  expertise: ['Web Development', 'System Design', 'React', 'Node.js', 'Python', 'Machine Learning'],
-  rating: 4.9,
-  totalReviews: 124,
-  hourlyRate: 2000,
-  about: `I'm a senior software engineer at Google with over 10 years of experience in full-stack development. I specialize in building scalable web applications and helping developers grow in their careers.
-
-Throughout my career, I've mentored numerous junior developers and helped them advance to senior positions. My teaching approach focuses on practical, real-world scenarios and best practices that you can immediately apply to your work.
-
-I believe in the power of hands-on learning and will work with you to solve actual coding problems, review your code, and provide detailed feedback to help you improve.`,
-  experience: 10,
-  languages: ['Bengali', 'English'],
-  category: 'Programming',
-  education: [
-    {
-      degree: 'MSc in Computer Science',
-      institution: 'BUET',
-      year: 2015
-    },
-    {
-      degree: 'BSc in Computer Science',
-      institution: 'BUET',
-      year: 2013
-    }
-  ],
-  customUrl: 'rahman-khan',
-  services: [
-    {
-      id: '1',
-      title: '1:1 Mentoring Session',
-      description: 'Personalized mentoring session focused on your specific needs and goals.',
-      duration: 60,
-      price: 2000,
-      type: 'one-on-one'
-    },
-    {
-      id: '2',
-      title: 'Code Review',
-      description: 'Detailed review of your code with actionable feedback and best practices.',
-      duration: 30,
-      price: 1500,
-      type: 'one-on-one'
-    },
-    {
-      id: '3',
-      title: 'System Design Workshop',
-      description: 'Group workshop on system design principles and practices.',
-      duration: 120,
-      price: 3000,
-      type: 'group',
-      maxParticipants: 5
-    }
-  ],
-  socialLinks: [
-    {
-      platform: 'twitter',
-      url: 'https://twitter.com/rahmankhan'
-    },
-    {
-      platform: 'linkedin',
-      url: 'https://linkedin.com/in/rahmankhan'
-    },
-    {
-      platform: 'github',
-      url: 'https://github.com/rahmankhan'
-    }
-  ],
-  achievements: [
-    'Google Developer Expert',
-    'Published author on System Design',
-    'Speaker at tech conferences'
-  ]
-};
-
-const mockReviews: SessionFeedback[] = [
-  {
-    id: '1',
-    sessionId: 's1',
-    rating: 5,
-    review: "Dr. Rahman is an exceptional mentor. His deep knowledge and clear explanations helped me understand complex system design concepts. He provided practical examples and valuable industry insights.",
-    createdAt: '2024-03-15T10:00:00Z',
-    updatedAt: '2024-03-15T10:00:00Z'
-  },
-  {
-    id: '2',
-    sessionId: 's2',
-    rating: 5,
-    review: "Great mentor! He helped me prepare for my technical interviews and provided valuable feedback on my coding practices. His experience at Google brings a unique perspective.",
-    createdAt: '2024-03-10T15:30:00Z',
-    updatedAt: '2024-03-10T15:30:00Z'
-  }
-];
+import { getMentorById, getMentorReviews } from '@/lib/api/mentors';
 
 export default function MentorProfile() {
   const { id } = useParams();
@@ -151,28 +50,14 @@ export default function MentorProfile() {
 
   const { data: mentor, isLoading: isMentorLoading } = useQuery({
     queryKey: ['mentor', id],
-    queryFn: async () => {
-      // In production, this would be an API call
-      // const response = await axios.get(`/api/mentors/${id}`);
-      // return response.data as Mentor;
-      
-      // For development, using mock data
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return mockMentor;
-    },
+    queryFn: () => getMentorById(id!),
+    enabled: !!id
   });
 
   const { data: reviews, isLoading: isReviewsLoading } = useQuery({
     queryKey: ['mentor-reviews', id],
-    queryFn: async () => {
-      // In production, this would be an API call
-      // const response = await axios.get(`/api/mentors/${id}/reviews`);
-      // return response.data as SessionFeedback[];
-      
-      // For development, using mock data
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return mockReviews;
-    },
+    queryFn: () => getMentorReviews(id!),
+    enabled: !!id
   });
 
   const profileUrl = `${window.location.origin}/mentor/${mentor?.customUrl || id}`;
