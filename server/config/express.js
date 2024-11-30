@@ -15,9 +15,10 @@ export const configureExpress = () => {
 
   // Security middleware
   app.use(cors({
-    origin: process.env.CLIENT_URL || '*',
+    origin:'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials : true
   }));
 
   app.use(helmet({
