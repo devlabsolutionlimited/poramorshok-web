@@ -23,33 +23,51 @@ export interface Service {
   maxParticipants?: number;
 }
 
-export interface SocialLink {
+export interface SocialLinks {
   platform: 'twitter' | 'linkedin' | 'github' | 'website';
   url: string;
 }
 
-export interface Mentor {
-  id: string;
+export interface Education {
+  degree: string;
+  institution: string;
+  year: number;
+  description?: string;
+}
+
+export interface MentorProfile {
   name: string;
   title: string;
   company: string;
-  avatar: string;
+  avatar?: string;
+  about: string;
+  hourlyRate: number;
   expertise: string[];
+  languages: string[];
+  education: Education[];
+  socialLinks: SocialLinks[];
+  customUrl?: string;
+}
+
+export interface Mentor extends MentorProfile {
+  id: string;
   rating: number;
   totalReviews: number;
-  hourlyRate: number;
-  about: string;
   experience: number;
-  languages: string[];
   category: Category;
-  education: {
-    degree: string;
-    institution: string;
-    year: number;
-  }[];
-  customUrl?: string;
   services: Service[];
-  socialLinks?: SocialLink[];
   achievements?: string[];
   featured?: boolean;
+}
+
+export interface MentorSearchFilters {
+  category?: Category;
+  expertise?: string[];
+  priceRange?: {
+    min: number;
+    max: number;
+  };
+  rating?: number;
+  language?: string[];
+  search?: string;
 }
