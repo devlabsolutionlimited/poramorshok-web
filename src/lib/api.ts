@@ -1,17 +1,13 @@
 import axios from 'axios';
-
-const API_URL ='http://127.0.0.1:5173/api';;
-
-if (!API_URL) {
-  throw new Error('VITE_API_URL environment variable is not defined');
-}
+import { ApiError, NetworkError, AuthenticationError } from './errors';
+import config from './config';
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: config.apiUrl,
   headers: {
     'Content-Type': 'application/json'
   },
-  withCredentials : true
+  withCredentials: true
 });
 
 // Request interceptor
@@ -30,14 +26,22 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.message || 'An error occurred';
-    
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+    if (!error.response) {
+      throw new NetworkError();
     }
 
-    return Promise.reject(new Error(message));
+    const { status, data } = error.response;
+
+    if (status === 401) {
+      localStorage.removeItem('token');
+      throw new AuthenticationError(data?.message);
+    }
+
+    throw new ApiError(
+      status,
+      data?.message || 'An error occurred',
+      data?.errors
+    );
   }
 );
 
