@@ -6,7 +6,8 @@ const http = axios.create({
   baseURL: config.apiUrl,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  withCredentials: true
 });
 
 http.interceptors.request.use(
