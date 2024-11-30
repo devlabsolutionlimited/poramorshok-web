@@ -18,7 +18,7 @@ export const configureExpress = () => {
 
   // Security middleware
   app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.CLIENT_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
@@ -63,7 +63,7 @@ export const configureExpress = () => {
     });
   });
 
-  // API Routes
+  // API Routes - All routes prefixed with /api
   app.use('/api/auth', authRoutes);
   app.use('/api/mentors', mentorRoutes);
   app.use('/api/mentor/payments', mentorPaymentRoutes);
