@@ -1,4 +1,4 @@
-import api from '@/lib/http';
+import api from '@/lib/api';
 import type { Session, SessionType } from '@/types/session';
 
 export const getMentorSessions = async () => {
@@ -27,5 +27,15 @@ export const deleteSessionType = async (id: string) => {
 
 export const getSessionTypes = async () => {
   const response = await api.get('/api/mentors/session-types');
+  return response.data;
+};
+
+export const updateSessionStatus = async (id: string, status: Session['status']) => {
+  const response = await api.put(`/api/sessions/${id}/status`, { status });
+  return response.data;
+};
+
+export const addSessionFeedback = async (id: string, feedback: { rating: number; review: string }) => {
+  const response = await api.post(`/api/sessions/${id}/feedback`, feedback);
   return response.data;
 };
