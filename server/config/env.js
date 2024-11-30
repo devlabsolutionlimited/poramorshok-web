@@ -24,7 +24,9 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(1),
   CLIENT_URL: z.string().min(1),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  STRIPE_SECRET_KEY: z.string().min(1)
+  STRIPE_SECRET_KEY: z.string().min(1),
+  MONGODB_RETRY_INTERVAL: z.coerce.number().default(5000),
+  MONGODB_MAX_RETRIES: z.coerce.number().default(5)
 });
 
 // Validate environment variables
