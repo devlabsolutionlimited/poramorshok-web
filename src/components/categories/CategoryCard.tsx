@@ -17,6 +17,7 @@ interface CategoryCardProps {
   category: Category;
   count?: number;
   className?: string;
+  title?: string;
 }
 
 const categoryIcons = {
@@ -41,7 +42,7 @@ const categoryColors = {
   Career: 'bg-pink-500/10 text-pink-500',
 };
 
-export default function CategoryCard({ category, count, className }: CategoryCardProps) {
+export default function CategoryCard({ category, count, className, title }: CategoryCardProps) {
   const Icon = categoryIcons[category];
   const colorClass = categoryColors[category];
 
@@ -54,7 +55,7 @@ export default function CategoryCard({ category, count, className }: CategoryCar
               <Icon className="h-6 w-6" />
             </div>
             <div>
-              <h3 className="font-semibold">{category}</h3>
+              <h3 className="font-semibold">{title || category}</h3>
               {count !== undefined && (
                 <p className="text-sm text-muted-foreground">
                   {count} mentor{count !== 1 ? 's' : ''}
