@@ -1,116 +1,83 @@
-import Mentor from '../models/Mentor.js';
-import User from '../models/User.js';
-import Session from '../models/Session.js';
+import { MentorService } from '../services/mentor.service.js';
 import { ApiError } from '../utils/ApiError.js';
+import { logger } from '../utils/logger.js';
 
-export const getMentors = async (req, res, next) => {
+export const getMentorDashboard = async (req, res, next) => {
   try {
-    const { search, expertise, priceRange, rating, language } = req.query;
-
-    let query = { isApproved: true };
-
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { company: { $regex: search, $options: 'i' } }
-      ];
-    }
-
-    if (expertise) {
-      query.expertise = { $in: expertise.split(',') };
-    }
-
-    if (priceRange) {
-      const [min, max] = priceRange.split(',');
-      query.hourlyRate = { $gte: min, $lte: max };
-    }
-
-    if (rating) {
-      query.rating = { $gte: parseFloat(rating) };
-    }
-
-    if (language) {
-      query.languages = { $in: language.split(',') };
-    }
-
-    const mentors = await Mentor.find(query).populate('userId', 'name email avatar');
-    res.json(mentors);
+    const mentorId = req.user.id;
+    const stats = await MentorService.getDashboardStats(mentorId);
+    res.json(stats);
   } catch (error) {
+    logger.error('Get mentor dashboard error:', error);
     next(error);
   }
 };
 
-export const getMentorById = async (req, res, next) => {
+export const getMentorAnalytics = async (req, res, next) => {
   try {
-    const mentor = await Mentor.findById(req.params.id).populate('userId', 'name email avatar');
-    if (!mentor) {
-      throw new ApiError(404, 'Mentor not found');
-    }
-    res.json(mentor);
+    const mentorId = req.user.id;
+    const analytics = await MentorService.getAnalytics(mentorId);
+    res.json(analytics);
   } catch (error) {
+    logger.error('Get mentor analytics error:', error);
     next(error);
   }
 };
 
-export const createMentorProfile = async (req, res, next) => {
+export const updateMentorAvailability = async (req, res, next) => {
   try {
-    const existingProfile = await Mentor.findOne({ userId: req.user._id });
-    if (existingProfile) {
-      throw new ApiError(400, 'Mentor profile already exists');
-    }
-
-    const mentor = await Mentor.create({
-      userId: req.user._id,
-      ...req.body
-    });
-
-    await User.findByIdAndUpdate(req.user._id, { role: 'mentor' });
-
-    res.status(201).json(mentor);
+    const mentorId = req.user.id;
+    const availability = await MentorService.updateAvailability(mentorId, req.body);
+    res.json(availability);
   } catch (error) {
+    logger.error('Update mentor availability error:', error);
     next(error);
   }
 };
 
-export const updateMentorProfile = async (req, res, next) => {
+export const getMentorSessions = async (req, res, next) => {
   try {
-    const mentor = await Mentor.findOneAndUpdate(
-      { userId: req.user._id },
-      req.body,
-      { new: true }
-    );
-
-    if (!mentor) {
-      throw new ApiError(404, 'Mentor profile not found');
-    }
-
-    res.json(mentor);
+    const mentorId = req.user.id;
+    const { status, date } = req.query;
+    const sessions = await MentorService.getSessions(mentorId, { status, date });
+    res.json(sessions);
   } catch (error) {
+    logger.error('Get mentor sessions error:', error);
     next(error);
   }
 };
 
-export const getMentorReviews = async (req, res, next) => {
+export const createSessionType = async (req, res, next) => {
   try {
-    const sessions = await Session.find({
-      mentorId: req.params.id,
-      'feedback.rating': { $exists: true }
-    }).populate('studentId', 'name avatar');
-
-    const reviews = sessions.map(session => ({
-      id: session._id,
-      rating: session.feedback.rating,
-      review: session.feedback.review,
-      createdAt: session.feedback.createdAt,
-      student: {
-        id: session.studentId._id,
-        name: session.studentId.name,
-        avatar: session.studentId.avatar
-      }
-    }));
-
-    res.json(reviews);
+    const mentorId = req.user.id;
+    const sessionType = await MentorService.createSessionType(mentorId, req.body);
+    res.status(201).json(sessionType);
   } catch (error) {
+    logger.error('Create session type error:', error);
+    next(error);
+  }
+};
+
+export const updateSessionType = async (req, res, next) => {
+  try {
+    const mentorId = req.user.id;
+    const { id } = req.params;
+    const sessionType = await MentorService.updateSessionType(mentorId, id, req.body);
+    res.json(sessionType);
+  } catch (error) {
+    logger.error('Update session type error:', error);
+    next(error);
+  }
+};
+
+export const deleteSessionType = async (req, res, next) => {
+  try {
+    const mentorId = req.user.id;
+    const { id } = req.params;
+    await MentorService.deleteSessionType(mentorId, id);
+    res.status(204).send();
+  } catch (error) {
+    logger.error('Delete session type error:', error);
     next(error);
   }
 };
