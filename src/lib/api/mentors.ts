@@ -17,16 +17,16 @@ interface MentorSearchResponse {
 }
 
 export const searchMentors = async (filters?: MentorSearchFilters): Promise<MentorSearchResponse> => {
-  const response = await api.get('/api/mentors', { params: filters });
+  const response = await api.get('/mentors', { params: filters });
   return response.data;
 };
 
 export const getMentorById = async (id: string): Promise<Mentor> => {
-  const response = await api.get(`/api/mentors/${id}`);
+  const response = await api.get(`/mentors/${id}`);
   return response.data;
 };
 
 export const getMentorReviews = async (id: string) => {
-  const response = await api.get(`/api/mentors/${id}/reviews`);
+  const response = await api.get(`/mentors/${id}/reviews`);
   return response.data;
 };
