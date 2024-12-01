@@ -1,4 +1,4 @@
-import api from '@/lib/api';
+import api from '@/lib/http';
 import type { MentorProfile } from '@/types/mentor';
 
 export const getMentorProfile = async () => {
@@ -7,27 +7,27 @@ export const getMentorProfile = async () => {
 };
 
 export const updateBasicInfo = async (data: Partial<MentorProfile>) => {
-  const response = await api.put('/mentor/profile/basic', data);
+  const response = await api.put('/api/mentor/profile/basic', data);
   return response.data;
 };
 
 export const updateExpertise = async (data: { expertise: string[]; languages: string[] }) => {
-  const response = await api.put('/mentor/profile/expertise', data);
+  const response = await api.put('/api/mentor/profile/expertise', data);
   return response.data;
 };
 
 export const updateEducation = async (data: { education: MentorProfile['education'] }) => {
-  const response = await api.put('/mentor/profile/education', data);
+  const response = await api.put('/api/mentor/profile/education', data);
   return response.data;
 };
 
 export const updateSocialLinks = async (data: { socialLinks: MentorProfile['socialLinks'] }) => {
-  const response = await api.put('/mentor/profile/social', data);
+  const response = await api.put('/api/mentor/profile/social', data);
   return response.data;
 };
 
 export const updateCustomUrl = async (customUrl: string) => {
-  const response = await api.put('/mentor/profile/custom-url', { customUrl });
+  const response = await api.put('/api/mentor/profile/custom-url', { customUrl });
   return response.data;
 };
 
@@ -35,7 +35,7 @@ export const updateAvatar = async (file: File) => {
   const formData = new FormData();
   formData.append('avatar', file);
   
-  const response = await api.put('/mentor/profile/avatar', formData, {
+  const response = await api.put('/api/mentor/profile/avatar', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
