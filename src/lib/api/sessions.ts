@@ -1,4 +1,4 @@
-import api from '@/lib/api';
+import api from '@/lib/http';
 import type { Session, SessionType } from '@/types/session';
 
 export const getSessionTypes = async () => {
