@@ -1,16 +1,6 @@
 import api from '@/lib/http';
 import type { Mentor } from '@/types/mentor';
 
-export const getMentorDashboard = async () => {
-  const response = await api.get('/api/mentors/dashboard');
-  return response.data;
-};
-
-export const getMentorAnalytics = async () => {
-  const response = await api.get('/api/mentors/analytics');
-  return response.data;
-};
-
 export const getMentorProfile = async () => {
   const response = await api.get('/api/mentor/profile');
   return response.data;
