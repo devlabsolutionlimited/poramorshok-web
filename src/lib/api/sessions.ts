@@ -31,11 +31,11 @@ export const getSessionTypes = async () => {
 };
 
 export const updateSessionStatus = async (id: string, status: Session['status']) => {
-  const response = await api.put(`/api/sessions/${id}/status`, { status });
+  const response = await api.put(`/sessions/${id}/status`, { status });
   return response.data;
 };
 
 export const addSessionFeedback = async (id: string, feedback: { rating: number; review: string }) => {
-  const response = await api.post(`/api/sessions/${id}/feedback`, feedback);
+  const response = await api.post(`/sessions/${id}/feedback`, feedback);
   return response.data;
 };
