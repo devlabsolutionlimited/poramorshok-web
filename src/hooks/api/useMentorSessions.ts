@@ -37,46 +37,36 @@ export function useMentorSessions() {
 
   const createSessionTypeMutation = useMutation({
     mutationFn: createSessionType,
-    onMutate: async (newSessionType) => {
+    onMutate: async (newData) => {
+      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['session-types'] });
-
-      const previousSessionTypes = queryClient.getQueryData(['session-types']);
-
-      queryClient.setQueryData(['session-types'], (old: any) => {
-        const newTypes = old ? [...old] : [];
-        newTypes.push({
-          ...newSessionType,
-          id: Date.now().toString(),
-          totalBookings: 0,
-          rating: 0,
-          reviews: 0
-        });
-        return newTypes;
-      });
       
-      return { previousSessionTypes };
+      // Snapshot the previous value
+      const previousData = queryClient.getQueryData(['session-types']);
+      
+      // Return context with snapshot
+      return { previousData };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['session-types'] });
+      queryClient.invalidateQueries({ queryKey: ['mentor-dashboard'] });
       toast({
         title: 'Success',
         description: 'Session type created successfully',
       });
     },
-    onError: (error: Error, _variables, context) => {
-      if (context?.previousSessionTypes) {
-        queryClient.setQueryData(['session-types'], context.previousSessionTypes);
-      }
+    onError: (error: Error) => {
       console.error('Create session type error:', error);
+      // Show more specific error message
       toast({
         title: 'Error',
-        description: 'Failed to create session type. Please try again.',
+        description: error.message || 'Failed to create session type. Please check your input and try again.',
         variant: 'destructive',
       });
     },
     onSettled: () => {
+      // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: ['session-types'] });
-      queryClient.invalidateQueries({ queryKey: ['mentor-dashboard'] });
     }
   });
 
