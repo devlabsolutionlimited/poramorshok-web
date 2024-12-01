@@ -9,8 +9,8 @@ import {
   deletePaymentMethod,
   requestWithdrawal,
   getWithdrawals,
-  getEarnings,
-  getEarningStats
+  getPaymentStats,
+  getTransactions
 } from '../controllers/mentor.payment.controller.js';
 
 const router = express.Router();
@@ -19,7 +19,10 @@ const router = express.Router();
 router.use(protect);
 router.use(authorize('mentor'));
 
-// Payment methods
+// Payment Stats
+router.get('/stats', getPaymentStats);
+
+// Payment Methods
 router.get('/methods', getPaymentMethods);
 
 router.post(
@@ -54,6 +57,9 @@ router.put(
 
 router.delete('/methods/:id', deletePaymentMethod);
 
+// Transactions
+router.get('/transactions', getTransactions);
+
 // Withdrawals
 router.post(
   '/withdraw',
@@ -66,9 +72,5 @@ router.post(
 );
 
 router.get('/withdrawals', getWithdrawals);
-
-// Earnings
-router.get('/earnings', getEarnings);
-router.get('/earnings/stats', getEarningStats);
 
 export default router;
