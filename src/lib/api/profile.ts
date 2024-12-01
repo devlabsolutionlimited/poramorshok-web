@@ -35,7 +35,7 @@ export const updateAvatar = async (file: File) => {
   const formData = new FormData();
   formData.append('avatar', file);
   
-  const response = await api.put('/api/mentor/profile/avatar', formData, {
+  const response = await api.put('/mentor/profile/avatar', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
