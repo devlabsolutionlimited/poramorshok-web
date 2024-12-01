@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { ApiError } from '../utils/ApiError.js';
 import User from '../models/User.js';
+import { logger } from '../utils/logger.js';
 
 export const protect = async (req, res, next) => {
   try {
@@ -11,7 +12,7 @@ export const protect = async (req, res, next) => {
     }
 
     if (!token) {
-      throw new ApiError(401, 'Not authorized');
+      throw new ApiError(401, 'Not authorized - No token provided');
     }
 
     try {
@@ -19,10 +20,21 @@ export const protect = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Get user from token
-      req.user = await User.findById(decoded.id).select('-password');
+      const user = await User.findById(decoded.id).select('-password');
+      
+      if (!user) {
+        throw new ApiError(401, 'User not found');
+      }
+
+      if (user.status !== 'active') {
+        throw new ApiError(401, 'Account is not active');
+      }
+
+      req.user = user;
       next();
     } catch (error) {
-      throw new ApiError(401, 'Not authorized');
+      logger.error('Auth middleware error:', error);
+      throw new ApiError(401, 'Not authorized - Invalid token');
     }
   } catch (error) {
     next(error);
@@ -32,7 +44,7 @@ export const protect = async (req, res, next) => {
 export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      throw new ApiError(403, 'Not authorized to access this route');
+      throw new ApiError(403, `Role ${req.user.role} is not authorized to access this route`);
     }
     next();
   };
