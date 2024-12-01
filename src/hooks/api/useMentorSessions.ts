@@ -20,36 +20,30 @@ export function useMentorSessions() {
     queryKey: ['mentor-sessions'],
     queryFn: getMentorSessions,
     staleTime: 0, // Always fetch fresh data
-    retry: 3
+    retry: 3,
+    retryDelay: 1000
   });
 
   const statsQuery = useQuery({
     queryKey: ['session-stats'],
     queryFn: getSessionStats,
-    staleTime: 0 // Always fetch fresh data
+    staleTime: 0, // Always fetch fresh data
+    retry: 3,
+    retryDelay: 1000
   });
 
   const sessionTypesQuery = useQuery({
     queryKey: ['session-types'],
     queryFn: getSessionTypes,
-    staleTime: 0 // Always fetch fresh data
+    staleTime: 0, // Always fetch fresh data
+    retry: 3,
+    retryDelay: 1000
   });
 
   const createSessionTypeMutation = useMutation({
     mutationFn: createSessionType,
-    onMutate: async (newData) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['session-types'] });
-      
-      // Snapshot the previous value
-      const previousData = queryClient.getQueryData(['session-types']);
-      
-      // Return context with snapshot
-      return { previousData };
-    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['session-types'] });
-      queryClient.invalidateQueries({ queryKey: ['mentor-dashboard'] });
       toast({
         title: 'Success',
         description: 'Session type created successfully',
@@ -57,16 +51,11 @@ export function useMentorSessions() {
     },
     onError: (error: Error) => {
       console.error('Create session type error:', error);
-      // Show more specific error message
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create session type. Please check your input and try again.',
+        description: error.message || 'Failed to create session type',
         variant: 'destructive',
       });
-    },
-    onSettled: () => {
-      // Always refetch after error or success
-      queryClient.invalidateQueries({ queryKey: ['session-types'] });
     }
   });
 
@@ -92,24 +81,18 @@ export function useMentorSessions() {
   const deleteSessionTypeMutation = useMutation({
     mutationFn: deleteSessionType,
     onSuccess: () => {
-      // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['session-types'] });
-      queryClient.invalidateQueries({ queryKey: ['mentor-dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['session-stats'] });
       toast({
         title: 'Success',
         description: 'Session type deleted successfully',
       });
     },
     onError: (error: Error) => {
-      console.error('Delete session type error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete session type. Please try again.',
+        description: error.message || 'Failed to delete session type',
         variant: 'destructive',
       });
-      // Re-fetch session types to ensure UI is in sync
-      queryClient.invalidateQueries({ queryKey: ['session-types'] });
     }
   });
 
