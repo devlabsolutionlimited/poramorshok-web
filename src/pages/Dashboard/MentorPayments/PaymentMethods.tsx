@@ -12,6 +12,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -81,6 +82,17 @@ export default function PaymentMethods({ paymentMethods = [] }: PaymentMethodsPr
 
   const onSubmit = async (data: z.infer<typeof paymentMethodSchema>) => {
     try {
+      // Validate mobile number format for mobile banking methods
+      if (data.type !== 'bank' && data.number) {
+        if (!/^01[3-9]\d{8}$/.test(data.number)) {
+          form.setError('number', {
+            type: 'manual',
+            message: 'Please enter a valid mobile number'
+          });
+          return;
+        }
+      }
+
       await addPaymentMethod(data);
       setIsAddModalOpen(false);
       form.reset();
@@ -102,6 +114,10 @@ export default function PaymentMethods({ paymentMethods = [] }: PaymentMethodsPr
 
   const handleDelete = async (id: string) => {
     try {
+      if (!confirm('Are you sure you want to delete this payment method?')) {
+        return;
+      }
+
       await deletePaymentMethod(id);
     } catch (error) {
       console.error('Error deleting payment method:', error);
@@ -208,8 +224,15 @@ export default function PaymentMethods({ paymentMethods = [] }: PaymentMethodsPr
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Mobile Number</FormLabel>
+                        <FormDescription>
+                          Enter your {form.watch('type')} registered number
+                        </FormDescription>
                         <FormControl>
-                          <Input {...field} />
+                          <Input 
+                            {...field} 
+                            placeholder="01XXXXXXXXX"
+                            pattern="^01[3-9]\d{8}$"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
