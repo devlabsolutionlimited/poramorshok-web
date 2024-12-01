@@ -78,16 +78,8 @@ export default function ManageSessions() {
   const handleDeleteSessionType = async (id: string) => {
     try {
       await deleteSessionType(id);
-      toast({
-        title: 'Success',
-        description: 'Session type deleted successfully.',
-      });
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete session type. Please try again.',
-        variant: 'destructive',
-      });
+      console.error('Error deleting session type:', error);
     }
   };
 
