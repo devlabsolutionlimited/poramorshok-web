@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { PageLoader } from '@/components/ui/page-loader';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SessionStatusCard from '@/components/sessions/SessionStatusCard';
@@ -19,6 +20,7 @@ export default function ManageSessions() {
     status: 'all',
     date: undefined as Date | undefined
   });
+  const { toast } = useToast();
 
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [isCreateTypeModalOpen, setIsCreateTypeModalOpen] = useState(false);
@@ -58,15 +60,35 @@ export default function ManageSessions() {
   const handleCreateSessionType = async (data: Partial<SessionType>) => {
     await createSessionType(data);
     setIsCreateTypeModalOpen(false);
+    toast({
+      title: 'Success',
+      description: 'Session type created successfully. It will appear in the list shortly.',
+    });
   };
 
   const handleUpdateSessionType = async (id: string, data: Partial<SessionType>) => {
     await updateSessionType({ id, data });
     setSelectedSessionType(null);
+    toast({
+      title: 'Success',
+      description: 'Session type updated successfully.',
+    });
   };
 
   const handleDeleteSessionType = async (id: string) => {
-    await deleteSessionType(id);
+    try {
+      await deleteSessionType(id);
+      toast({
+        title: 'Success',
+        description: 'Session type deleted successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete session type. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleUpdateSessionStatus = async (sessionId: string, newStatus: Session['status']) => {
