@@ -1,22 +1,37 @@
 import api from '@/lib/http';
-import type { PaymentStats, PaymentMethod, Transaction, WithdrawalRequest } from '@/types/payment';
+import type { PaymentMethod, PaymentStats, Transaction, WithdrawalRequest } from '@/types/payment';
 
 // Payment Stats
 export const getPaymentStats = async (): Promise<PaymentStats> => {
-  const response = await api.get('/mentor/payments/stats');
-  return response.data;
+  try {
+    const response = await api.get('/mentor/payments/stats');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching payment stats:', error);
+    return {
+      balance: 0,
+      pendingPayouts: 0,
+      nextPayout: new Date().toISOString(),
+      totalEarnings: 0,
+      monthlyEarnings: []
+    };
+  }
 };
 
 // Payment Methods
 export const getPaymentMethods = async (): Promise<PaymentMethod[]> => {
-  const response = await api.get('/mentor/payment-methods');
-  return response.data;
+  try {
+    const response = await api.get('/mentor/payment-methods');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching payment methods:', error);
+    return [];
+  }
 };
 
 export const addPaymentMethod = async (data: Partial<PaymentMethod>): Promise<PaymentMethod> => {
   const formattedData = {
     ...data,
-    // Format mobile number for mobile banking methods
     number: data.type !== 'bank' ? data.number?.replace(/\s+/g, '') : undefined,
   };
 
@@ -35,8 +50,13 @@ export const deletePaymentMethod = async (id: string): Promise<void> => {
 
 // Transactions
 export const getTransactions = async (): Promise<Transaction[]> => {
-  const response = await api.get('/mentor/payments/transactions');
-  return response.data;
+  try {
+    const response = await api.get('/mentor/payments/transactions');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    return [];
+  }
 };
 
 // Withdrawals
@@ -46,6 +66,11 @@ export const requestWithdrawal = async (data: WithdrawalRequest): Promise<void> 
 };
 
 export const getWithdrawals = async () => {
-  const response = await api.get('/mentor/payments/withdrawals');
-  return response.data;
+  try {
+    const response = await api.get('/mentor/payments/withdrawals');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching withdrawals:', error);
+    return [];
+  }
 };
