@@ -21,7 +21,7 @@ export function usePayments() {
     queryFn: getPaymentStats,
     staleTime: 1000 * 60, // 1 minute
     retry: 3,
-    retryDelay: 1000,
+    retryDelay: 1000
   });
 
   // Payment Methods Query
@@ -30,7 +30,7 @@ export function usePayments() {
     queryFn: getPaymentMethods,
     staleTime: 1000 * 60, // 1 minute
     retry: 3,
-    retryDelay: 1000,
+    retryDelay: 1000
   });
 
   // Transactions Query
