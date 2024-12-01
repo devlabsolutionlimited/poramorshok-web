@@ -19,17 +19,12 @@ export function usePayments() {
   // Stats Query
   const statsQuery = useQuery({
     queryKey: ['payment-stats'],
-    queryFn: getPaymentStats, 
-    staleTime: 1000 * 60, // 1 minute
+    queryFn: getPaymentStats,
+    staleTime: 0, // Always fetch fresh data
     retry: 3,
     retryDelay: 1000,
     onError: (error) => {
       console.error('Failed to fetch payment stats:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load payment information. Please try again later.',
-        variant: 'destructive',
-      });
     }
   });
 
@@ -37,6 +32,7 @@ export function usePayments() {
   const methodsQuery = useQuery({
     queryKey: ['payment-methods'],
     queryFn: getPaymentMethods,
+    staleTime: 0,
     retry: 3,
     retryDelay: 1000
   });
@@ -45,16 +41,9 @@ export function usePayments() {
   const transactionsQuery = useQuery({
     queryKey: ['transactions'],
     queryFn: getTransactions,
+    staleTime: 0,
     retry: 3,
-    retryDelay: 1000,
-    onError: (error) => {
-      console.error('Failed to fetch transactions:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load transaction history. Please try again later.',
-        variant: 'destructive',
-      });
-    }
+    retryDelay: 1000
   });
 
   // Withdrawals Query
