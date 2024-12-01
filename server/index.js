@@ -5,6 +5,9 @@ import { initializeSocket } from './config/socket.js';
 import { logger } from './utils/logger.js';
 
 const startServer = async () => {
+  const app = configureExpress();
+  const port = process.env.PORT || 5173;
+
   try {
     // Connect to MongoDB with retries
     const maxRetries = 5;
@@ -25,13 +28,10 @@ const startServer = async () => {
       }
     }
 
-    // Initialize Express app
-    const app = configureExpress();
-
     // Start server
-    const server = app.listen(env.PORT, () => {
-      logger.info(`Server running in ${env.NODE_ENV} mode on port ${env.PORT}`);
-      console.log(`Server running in ${env.NODE_ENV} mode on port ${env.PORT}`);
+    const server = app.listen(port, () => {
+      logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
+      console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
       if (isDev) {
         logger.info(`API URL: ${env.CLIENT_URL}`);
       }
