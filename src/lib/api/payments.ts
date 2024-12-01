@@ -4,7 +4,7 @@ import type { PaymentMethod, PaymentStats, Transaction, WithdrawalRequest } from
 // Payment Stats
 export const getPaymentStats = async (): Promise<PaymentStats> => {
   try {
-    const response = await api.get('/mentor/payments/stats');
+    const response = await api.get('/api/mentor/payments/stats');
     return response.data;
   } catch (error) {
     console.error('Error fetching payment stats:', error);
@@ -21,7 +21,7 @@ export const getPaymentStats = async (): Promise<PaymentStats> => {
 // Payment Methods
 export const getPaymentMethods = async (): Promise<PaymentMethod[]> => {
   try {
-    const response = await api.get('/mentor/payment-methods');
+    const response = await api.get('/api/mentor/payments/methods');
     return response.data;
   } catch (error) {
     console.error('Error fetching payment methods:', error);
@@ -35,23 +35,23 @@ export const addPaymentMethod = async (data: Partial<PaymentMethod>): Promise<Pa
     number: data.type !== 'bank' ? data.number?.replace(/\s+/g, '') : undefined,
   };
 
-  const response = await api.post('/mentor/payment-methods', formattedData);
+  const response = await api.post('/api/mentor/payments/methods', formattedData);
   return response.data;
 };
 
 export const updatePaymentMethod = async (id: string, data: Partial<PaymentMethod>): Promise<PaymentMethod> => {
-  const response = await api.put(`/mentor/payment-methods/${id}`, data);
+  const response = await api.put(`/api/mentor/payments/methods/${id}`, data);
   return response.data;
 };
 
 export const deletePaymentMethod = async (id: string): Promise<void> => {
-  await api.delete(`/mentor/payment-methods/${id}`);
+  await api.delete(`/api/mentor/payments/methods/${id}`);
 };
 
 // Transactions
 export const getTransactions = async (): Promise<Transaction[]> => {
   try {
-    const response = await api.get('/mentor/payments/transactions');
+    const response = await api.get('/api/mentor/payments/transactions');
     return response.data;
   } catch (error) {
     console.error('Error fetching transactions:', error);
@@ -61,13 +61,13 @@ export const getTransactions = async (): Promise<Transaction[]> => {
 
 // Withdrawals
 export const requestWithdrawal = async (data: WithdrawalRequest): Promise<void> => {
-  const response = await api.post('/mentor/payments/withdraw', data);
+  const response = await api.post('/api/mentor/payments/withdraw', data);
   return response.data;
 };
 
 export const getWithdrawals = async () => {
   try {
-    const response = await api.get('/mentor/payments/withdrawals');
+    const response = await api.get('/api/mentor/payments/withdrawals');
     return response.data;
   } catch (error) {
     console.error('Error fetching withdrawals:', error);
