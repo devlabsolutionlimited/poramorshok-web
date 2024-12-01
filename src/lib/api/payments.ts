@@ -1,10 +1,24 @@
 import api from '@/lib/http';
 import type { PaymentMethod, WithdrawalRequest, PaymentStats, Transaction } from '@/types/payment';
 
-// Payment Stats
 export const getPaymentStats = async (): Promise<PaymentStats> => {
-  const response = await api.get('/mentor/payments/stats');
-  return response.data;
+  try {
+    const response = await api.get('/mentor/payments/stats');
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return {
+        balance: 0,
+        pendingPayouts: 0,
+        nextPayout: new Date().toISOString(),
+        totalEarnings: 0,
+        monthlyEarnings: []
+      };
+    }
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching payment stats:', error);
+    throw error;
+  }
 };
 
 // Payment Methods
@@ -63,8 +77,17 @@ export const getEarningStats = async () => {
   return response.data;
 };
 
-// Transactions
+// Transaction History
 export const getTransactions = async () => {
-  const response = await api.get('/mentor/payments/history');
-  return response.data;
+  try {
+    const response = await api.get('/mentor/payments/transactions');
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return [];
+    }
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    throw error;
+  }
 };
