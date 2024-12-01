@@ -14,6 +14,7 @@ export const getPaymentMethods = async (): Promise<PaymentMethod[]> => {
 };
 
 export const addPaymentMethod = async (data: Partial<PaymentMethod>): Promise<PaymentMethod> => {
+  // Format mobile numbers by removing spaces
   const formattedData = {
     ...data,
     number: data.type !== 'bank' ? data.number?.replace(/\s+/g, '') : undefined,
