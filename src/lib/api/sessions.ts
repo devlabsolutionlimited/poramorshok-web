@@ -10,9 +10,6 @@ export const getSessionTypes = async () => {
 export const createSessionType = async (data: Partial<SessionType>) => {
   const sessionTypeData = {
     ...data,
-    duration: parseInt(data.duration as string),
-    price: parseInt(data.price as string),
-    maxParticipants: data.maxParticipants ? parseInt(data.maxParticipants) : undefined,
     topics: data.topics ? (data.topics as string).split(',').map(t => t.trim()) : []
   };
 
