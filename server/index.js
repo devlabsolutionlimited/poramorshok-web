@@ -6,7 +6,7 @@ import { logger } from './utils/logger.js';
 
 const startServer = async () => {
   const app = configureExpress();
-  const port = process.env.PORT || 5173;
+  const port = process.env.PORT || 3001;
 
   try {
     // Connect to MongoDB with retries

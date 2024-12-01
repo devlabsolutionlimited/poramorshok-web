@@ -24,5 +24,3 @@ router.post('/login', loginValidation, login);
 router.get('/me', protect, getMe);
 
 export default router;
-
-export default router;
