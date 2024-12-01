@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 import { Clock, Users, Edit, Trash2, Star } from 'lucide-react';
 
 interface SessionType {
@@ -28,6 +29,24 @@ export default function SessionTypeCard({
   onEdit,
   onDelete
 }: SessionTypeCardProps) {
+  const { toast } = useToast();
+
+  const handleDelete = async () => {
+    try {
+      await onDelete(sessionType.id);
+      toast({
+        title: 'Session Type Deleted',
+        description: 'The session type has been deleted successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete session type. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <Card>
       <CardContent className="p-6 space-y-4">
@@ -57,7 +76,7 @@ export default function SessionTypeCard({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onDelete(sessionType.id)}
+              onClick={handleDelete}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
