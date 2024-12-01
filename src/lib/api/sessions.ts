@@ -1,13 +1,9 @@
 import api from '@/lib/api';
 import type { Session, SessionType } from '@/types/session';
 
-export const getMentorSessions = async () => {
-  const response = await api.get('/mentors/sessions');
-  return response.data;
-};
-
-export const getSessionStats = async () => {
-  const response = await api.get('/mentors/sessions/stats');
+// Session Types
+export const getSessionTypes = async () => {
+  const response = await api.get('/mentors/session-types');
   return response.data;
 };
 
@@ -22,11 +18,18 @@ export const updateSessionType = async (id: string, data: Partial<SessionType>) 
 };
 
 export const deleteSessionType = async (id: string) => {
-  await api.delete(`/mentors/session-types/${id}`);
+  const response = await api.delete(`/mentors/session-types/${id}`);
+  return response.data;
 };
 
-export const getSessionTypes = async () => {
-  const response = await api.get('/mentors/session-types');
+// Sessions
+export const getMentorSessions = async () => {
+  const response = await api.get('/mentors/sessions');
+  return response.data;
+};
+
+export const getSessionStats = async () => {
+  const response = await api.get('/mentors/sessions/stats');
   return response.data;
 };
 
