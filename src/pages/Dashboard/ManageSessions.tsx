@@ -59,20 +59,8 @@ export default function ManageSessions() {
 
   const handleCreateSessionType = async (formData: any) => {
     try {
-      const sessionTypeData = {
-        ...formData,
-        topics: formData.topics.split(',').map((t: string) => t.trim()),
-        duration: Number(formData.duration),
-        price: Number(formData.price),
-        maxParticipants: formData.type === 'group' ? Number(formData.maxParticipants) : undefined
-      };
-
-      await createSessionType(sessionTypeData);
+      await createSessionType(formData);
       setIsCreateTypeModalOpen(false);
-      toast({
-        title: 'Success',
-        description: 'Session type created successfully. It will appear in the list shortly.',
-      });
     } catch (error) {
       console.error('Error creating session type:', error);
       toast({
