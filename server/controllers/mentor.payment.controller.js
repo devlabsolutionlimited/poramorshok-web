@@ -2,6 +2,16 @@ import { PaymentService } from '../services/payment.service.js';
 import { ApiError } from '../utils/ApiError.js';
 import { logger } from '../utils/logger.js';
 
+export const getPaymentStats = async (req, res, next) => {
+  try {
+    const stats = await PaymentService.getPaymentStats(req.user.id);
+    res.json(stats);
+  } catch (error) {
+    logger.error('Get payment stats error:', error);
+    next(error);
+  }
+};
+
 export const getPaymentMethods = async (req, res, next) => {
   try {
     const methods = await PaymentService.getPaymentMethods(req.user.id);
@@ -46,6 +56,16 @@ export const deletePaymentMethod = async (req, res, next) => {
   }
 };
 
+export const getTransactions = async (req, res, next) => {
+  try {
+    const transactions = await PaymentService.getTransactions(req.user.id);
+    res.json(transactions);
+  } catch (error) {
+    logger.error('Get transactions error:', error);
+    next(error);
+  }
+};
+
 export const requestWithdrawal = async (req, res, next) => {
   try {
     const withdrawal = await PaymentService.requestWithdrawal(
@@ -65,26 +85,6 @@ export const getWithdrawals = async (req, res, next) => {
     res.json(withdrawals);
   } catch (error) {
     logger.error('Get withdrawals error:', error);
-    next(error);
-  }
-};
-
-export const getEarnings = async (req, res, next) => {
-  try {
-    const earnings = await PaymentService.getEarnings(req.user.id);
-    res.json(earnings);
-  } catch (error) {
-    logger.error('Get earnings error:', error);
-    next(error);
-  }
-};
-
-export const getEarningStats = async (req, res, next) => {
-  try {
-    const stats = await PaymentService.getEarningStats(req.user.id);
-    res.json(stats);
-  } catch (error) {
-    logger.error('Get earning stats error:', error);
     next(error);
   }
 };
