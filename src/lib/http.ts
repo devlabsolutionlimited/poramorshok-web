@@ -5,10 +5,15 @@ import config from './config';
 const http = axios.create({
   baseURL: config.apiUrl,
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
   },
   withCredentials: true,
-  timeout: 30000 // Increase timeout to 30 seconds
+  timeout: 30000, // 30 seconds timeout
+  // Handle preflight requests
+  validateStatus: (status) => {
+    return status >= 200 && status < 300 || status === 204;
+  }
 });
 
 http.interceptors.request.use(
