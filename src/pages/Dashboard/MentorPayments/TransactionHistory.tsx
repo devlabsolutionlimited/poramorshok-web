@@ -2,20 +2,28 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { ArrowDownLeft, ArrowUpRight, Clock } from 'lucide-react';
 
-interface Transaction {
-  id: string;
-  type: 'earning' | 'withdrawal';
-  amount: number;
-  date: string;
-  status: 'completed' | 'processing' | 'failed';
-  description: string;
-}
+import type { Transaction } from '@/types/payment';
 
 interface TransactionHistoryProps {
   transactions?: Transaction[];
 }
 
 export default function TransactionHistory({ transactions = [] }: TransactionHistoryProps) {
+  if (!transactions.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Transaction History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No transactions found.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
