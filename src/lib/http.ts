@@ -2,6 +2,11 @@ import axios, { AxiosError } from 'axios';
 import { ApiError, NetworkError, AuthenticationError } from './errors';
 import config from './config';
 
+interface ErrorResponse {
+  message?: string;
+  errors?: any[];
+}
+
 const http = axios.create({
   baseURL: config.apiUrl,
   headers: {
@@ -26,7 +31,7 @@ http.interceptors.request.use(
 // Response interceptor
 http.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  (error: AxiosError<ErrorResponse>) => {
     if (!error.response) {
       console.error('Network error:', error.message);
       throw new NetworkError('Network error occurred. Please check your connection.');
@@ -45,14 +50,14 @@ http.interceptors.response.use(
     if (status === 401) {
       localStorage.removeItem('token');
       throw new AuthenticationError(
-        data?.message || 'Authentication failed. Please log in again.'
+        (data && data.message) || 'Authentication failed. Please log in again.'
       );
     }
 
     throw new ApiError(
       status,
-      data?.message || 'An unexpected error occurred',
-      data?.errors || []
+      (data && data.message) || 'An unexpected error occurred',
+      (data && data.errors) || []
     );
   }
 );
