@@ -1,6 +1,12 @@
 import api from '@/lib/http';
 import type { PaymentMethod, WithdrawalRequest, PaymentStats, Transaction } from '@/types/payment';
 
+// Payment Stats
+export const getPaymentStats = async (): Promise<PaymentStats> => {
+  const response = await api.get('/mentor/payments/stats');
+  return response.data;
+};
+
 // Payment Methods
 export const getPaymentMethods = async () => {
   const response = await api.get('/mentor/payments/methods');
@@ -8,7 +14,21 @@ export const getPaymentMethods = async () => {
 };
 
 export const addPaymentMethod = async (data: Partial<PaymentMethod>) => {
-  const response = await api.post('/mentor/payments/methods', data);
+  // Transform data to match server expectations
+  const paymentData = {
+    type: data.type,
+    ...(data.type === 'bank' 
+      ? {
+          accountName: data.accountName,
+          accountNumber: data.accountNumber,
+          bankName: data.bankName,
+          branchName: data.branchName
+        }
+      : { number: data.number }
+    )
+  };
+
+  const response = await api.post('/mentor/payments/methods', paymentData);
   return response.data;
 };
 
@@ -45,12 +65,6 @@ export const getEarningStats = async () => {
 
 // Transactions
 export const getTransactions = async () => {
-  const response = await api.get('/mentor/payments/transactions');
-  return response.data;
-};
-
-// Payment Stats
-export const getPaymentStats = async (): Promise<PaymentStats> => {
-  const response = await api.get('/mentor/payments/stats');
+  const response = await api.get('/mentor/payments/history');
   return response.data;
 };
