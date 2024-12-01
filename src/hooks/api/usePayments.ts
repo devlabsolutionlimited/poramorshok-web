@@ -1,16 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-  getPaymentStats,
+  getPaymentStats, 
   getPaymentMethods,
   addPaymentMethod,
   updatePaymentMethod,
   deletePaymentMethod,
+  getTransactions,
   requestWithdrawal,
-  getWithdrawals,
-  getTransactions
+  getWithdrawals
 } from '@/lib/api/payments';
 import { useToast } from '@/hooks/use-toast';
-import type { PaymentMethod, WithdrawalRequest } from '@/types/payment';
 
 export function usePayments() {
   const queryClient = useQueryClient();
@@ -20,42 +19,38 @@ export function usePayments() {
   const statsQuery = useQuery({
     queryKey: ['payment-stats'],
     queryFn: getPaymentStats,
-    staleTime: 0,
+    staleTime: 1000 * 60, // 1 minute
     retry: 3,
     retryDelay: 1000,
-    onError: (error) => {
-      console.error('Failed to fetch payment stats:', error);
-    }
   });
 
   // Payment Methods Query
   const methodsQuery = useQuery({
     queryKey: ['payment-methods'],
     queryFn: getPaymentMethods,
-    staleTime: 0,
+    staleTime: 1000 * 60, // 1 minute
     retry: 3,
-    retryDelay: 1000
+    retryDelay: 1000,
   });
 
   // Transactions Query
   const transactionsQuery = useQuery({
     queryKey: ['transactions'],
     queryFn: getTransactions,
-    staleTime: 0,
-    retry: 3,
-    retryDelay: 1000
+    staleTime: 1000 * 60, // 1 minute
+    retry: 3
   });
 
   // Withdrawals Query
   const withdrawalsQuery = useQuery({
     queryKey: ['withdrawals'],
     queryFn: getWithdrawals,
-    retry: 3,
-    retryDelay: 1000
+    staleTime: 1000 * 60, // 1 minute
+    retry: 3
   });
 
   // Add Payment Method Mutation
-  const addMethodMutation = useMutation({
+  const addPaymentMethodMutation = useMutation({
     mutationFn: addPaymentMethod,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
@@ -64,19 +59,18 @@ export function usePayments() {
         description: 'Payment method added successfully',
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to add payment method',
+        description: error.message || 'Failed to add payment method',
         variant: 'destructive',
       });
     }
   });
 
   // Update Payment Method Mutation
-  const updateMethodMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<PaymentMethod> }) => 
-      updatePaymentMethod(id, data),
+  const updatePaymentMethodMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => updatePaymentMethod(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
       toast({
@@ -84,17 +78,17 @@ export function usePayments() {
         description: 'Payment method updated successfully',
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update payment method',
+        description: error.message || 'Failed to update payment method',
         variant: 'destructive',
       });
     }
   });
 
   // Delete Payment Method Mutation
-  const deleteMethodMutation = useMutation({
+  const deletePaymentMethodMutation = useMutation({
     mutationFn: deletePaymentMethod,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
@@ -103,17 +97,17 @@ export function usePayments() {
         description: 'Payment method deleted successfully',
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete payment method',
+        description: error.message || 'Failed to delete payment method',
         variant: 'destructive',
       });
     }
   });
 
   // Request Withdrawal Mutation
-  const withdrawalMutation = useMutation({
+  const requestWithdrawalMutation = useMutation({
     mutationFn: requestWithdrawal,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['withdrawals'] });
@@ -123,10 +117,10 @@ export function usePayments() {
         description: 'Withdrawal request submitted successfully',
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to submit withdrawal request',
+        description: error.message || 'Failed to submit withdrawal request',
         variant: 'destructive',
       });
     }
@@ -138,19 +132,19 @@ export function usePayments() {
     methods: methodsQuery.data,
     transactions: transactionsQuery.data,
     withdrawals: withdrawalsQuery.data,
-    isLoading: statsQuery.isLoading || methodsQuery.isLoading || transactionsQuery.isLoading,
-    error: statsQuery.error || methodsQuery.error || transactionsQuery.error,
+    isLoading: statsQuery.isLoading || methodsQuery.isLoading,
+    error: statsQuery.error || methodsQuery.error,
 
     // Mutations
-    addPaymentMethod: addMethodMutation.mutate,
-    updatePaymentMethod: updateMethodMutation.mutate,
-    deletePaymentMethod: deleteMethodMutation.mutate,
-    requestWithdrawal: withdrawalMutation.mutate,
+    addPaymentMethod: addPaymentMethodMutation.mutate,
+    updatePaymentMethod: updatePaymentMethodMutation.mutate,
+    deletePaymentMethod: deletePaymentMethodMutation.mutate,
+    requestWithdrawal: requestWithdrawalMutation.mutate,
 
-    // Mutation States
-    isAdding: addMethodMutation.isPending,
-    isUpdating: updateMethodMutation.isPending,
-    isDeleting: deleteMethodMutation.isPending,
-    isWithdrawing: withdrawalMutation.isPending
+    // Loading States
+    isAdding: addPaymentMethodMutation.isPending,
+    isUpdating: updatePaymentMethodMutation.isPending,
+    isDeleting: deletePaymentMethodMutation.isPending,
+    isRequesting: requestWithdrawalMutation.isPending
   };
 }
