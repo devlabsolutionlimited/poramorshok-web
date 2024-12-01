@@ -1,4 +1,4 @@
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import { AdminProvider } from './contexts/AdminContext';
@@ -21,7 +21,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
+      <BrowserRouter>
         <ThemeProvider defaultTheme="system" storageKey="app-theme">
           <LanguageProvider>
             <AuthProvider>
@@ -37,7 +37,7 @@ function App() {
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
-      </Router>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }
