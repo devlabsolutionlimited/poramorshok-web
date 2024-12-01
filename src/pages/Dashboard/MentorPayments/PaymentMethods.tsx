@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { usePayments } from '@/hooks/api/usePayments';
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -63,7 +63,14 @@ interface PaymentMethodsProps {
 
 export default function PaymentMethods({ paymentMethods = [] }: PaymentMethodsProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const { toast } = useToast();
+  const { 
+    addPaymentMethod, 
+    updatePaymentMethod,
+    deletePaymentMethod,
+    isAdding,
+    isUpdating,
+    isDeleting 
+  } = usePayments();
 
   const form = useForm<z.infer<typeof paymentMethodSchema>>({
     resolver: zodResolver(paymentMethodSchema),
@@ -74,58 +81,30 @@ export default function PaymentMethods({ paymentMethods = [] }: PaymentMethodsPr
 
   const onSubmit = async (data: z.infer<typeof paymentMethodSchema>) => {
     try {
-      // API call would go here
-      console.log('Adding payment method:', data);
-      
-      toast({
-        title: 'Payment Method Added',
-        description: 'Your payment method has been added successfully.',
-      });
-      
+      await addPaymentMethod(data);
       setIsAddModalOpen(false);
       form.reset();
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to add payment method. Please try again.',
-        variant: 'destructive',
-      });
+      console.error('Error adding payment method:', error);
     }
   };
 
   const handleSetDefault = async (id: string) => {
     try {
-      // API call would go here
-      console.log('Setting default payment method:', id);
-      
-      toast({
-        title: 'Default Updated',
-        description: 'Your default payment method has been updated.',
+      await updatePaymentMethod({ 
+        id, 
+        data: { isDefault: true } 
       });
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update default payment method.',
-        variant: 'destructive',
-      });
+      console.error('Error setting default payment method:', error);
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
-      // API call would go here
-      console.log('Deleting payment method:', id);
-      
-      toast({
-        title: 'Payment Method Removed',
-        description: 'Your payment method has been removed.',
-      });
+      await deletePaymentMethod(id);
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to remove payment method.',
-        variant: 'destructive',
-      });
+      console.error('Error deleting payment method:', error);
     }
   };
 
