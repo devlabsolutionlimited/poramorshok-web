@@ -1,18 +1,18 @@
 import { z } from 'zod';
 
 const envSchema = z.object({
-  VITE_API_URL: z.string().url().default('http://localhost:5173/api'),
+  VITE_API_URL: z.string().url().default('http://localhost:5173'),
   VITE_STRIPE_PUBLIC_KEY: z.string().default('pk_test_TYooMQauvdEDq54NiTphI7jx')
 });
 
 // Validate environment variables
 const env = envSchema.parse({
-  VITE_API_URL: import.meta.env.VITE_API_URL || 'http://localhost:5173/api',
+  VITE_API_URL: import.meta.env.VITE_API_URL || 'http://localhost:5173',
   VITE_STRIPE_PUBLIC_KEY: import.meta.env.VITE_STRIPE_PUBLIC_KEY
 });
 
 export const config = {
-  apiUrl: env.VITE_API_URL,
+  apiUrl: `${env.VITE_API_URL}/api`,
   stripePublicKey: env.VITE_STRIPE_PUBLIC_KEY
 } as const;
 
