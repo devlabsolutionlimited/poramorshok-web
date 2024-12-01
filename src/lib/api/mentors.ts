@@ -1,6 +1,16 @@
 import api from '@/lib/http';
 import type { Mentor, MentorSearchFilters } from '@/types/mentor';
 
+export const getMentorDashboard = async () => {
+  const response = await api.get('/mentors/dashboard');
+  return response.data;
+};
+
+export const getMentorAnalytics = async () => {
+  const response = await api.get('/mentors/analytics');
+  return response.data;
+};
+
 interface MentorSearchResponse {
   mentors: Mentor[];
   total: number;
