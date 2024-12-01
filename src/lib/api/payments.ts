@@ -1,30 +1,42 @@
 import api from '@/lib/http';
 import type { PaymentMethod, WithdrawalRequest, PaymentStats, Transaction } from '@/types/payment';
 
+// Default empty stats
+const emptyStats: PaymentStats = {
+  balance: 0,
+  pendingPayouts: 0,
+  nextPayout: new Date().toISOString(),
+  totalEarnings: 0,
+  monthlyEarnings: []
+};
+
+// Payment Stats
 export const getPaymentStats = async (): Promise<PaymentStats> => {
   try {
     const response = await api.get('/mentor/payments/stats');
     // Handle 204 No Content
     if (response.status === 204) {
-      return {
-        balance: 0,
-        pendingPayouts: 0,
-        nextPayout: new Date().toISOString(),
-        totalEarnings: 0,
-        monthlyEarnings: []
-      };
+      return emptyStats;
     }
     return response.data;
   } catch (error) {
     console.error('Error fetching payment stats:', error);
-    throw error;
+    return emptyStats;
   }
 };
 
 // Payment Methods
-export const getPaymentMethods = async () => {
-  const response = await api.get('/mentor/payments/methods');
-  return response.data;
+export const getPaymentMethods = async (): Promise<PaymentMethod[]> => {
+  try {
+    const response = await api.get('/mentor/payments/methods');
+    if (response.status === 204) {
+      return [];
+    }
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching payment methods:', error);
+    return [];
+  }
 };
 
 export const addPaymentMethod = async (data: Partial<PaymentMethod>) => {
@@ -62,32 +74,28 @@ export const requestWithdrawal = async (data: WithdrawalRequest) => {
 };
 
 export const getWithdrawals = async () => {
-  const response = await api.get('/mentor/payments/withdrawals');
-  return response.data;
-};
-
-// Earnings
-export const getEarnings = async () => {
-  const response = await api.get('/mentor/payments/earnings');
-  return response.data;
-};
-
-export const getEarningStats = async () => {
-  const response = await api.get('/mentor/payments/earnings/stats');
-  return response.data;
+  try {
+    const response = await api.get('/mentor/payments/withdrawals');
+    if (response.status === 204) {
+      return [];
+    }
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching withdrawals:', error);
+    return [];
+  }
 };
 
 // Transaction History
-export const getTransactions = async () => {
+export const getTransactions = async (): Promise<Transaction[]> => {
   try {
     const response = await api.get('/mentor/payments/transactions');
-    // Handle 204 No Content
     if (response.status === 204) {
       return [];
     }
     return response.data;
   } catch (error) {
     console.error('Error fetching transactions:', error);
-    throw error;
+    return [];
   }
 };
