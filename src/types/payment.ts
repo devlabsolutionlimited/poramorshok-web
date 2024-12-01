@@ -1,3 +1,24 @@
+export interface PaymentStats {
+  balance: number;
+  pendingPayouts: number;
+  nextPayout: string;
+  totalEarnings: number;
+  monthlyEarnings: {
+    month: string;
+    amount: number;
+  }[];
+}
+
+export interface Transaction {
+  id: string;
+  type: 'earning' | 'withdrawal';
+  amount: number;
+  date: string;
+  status: 'completed' | 'processing' | 'failed';
+  description: string;
+  metadata?: Record<string, any>;
+}
+
 export interface PaymentMethod {
   id: string;
   type: 'bkash' | 'nagad' | 'bank';
