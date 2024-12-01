@@ -1,25 +1,19 @@
 import api from '@/lib/http';
 import type { Session, SessionType } from '@/types/session';
 
+// Session Types
 export const getSessionTypes = async () => {
   const response = await api.get('/mentor/session-types');
   return response.data;
 };
 
 export const createSessionType = async (data: Partial<SessionType>) => {
-  // Transform the data to match server expectations
   const sessionTypeData = {
-    title: data.title?.trim(),
-    description: data.description?.trim(),
-    type: data.type || 'one-on-one',
-    topics: typeof data.topics === 'string' 
-      ? data.topics.split(',').map(t => t.trim()).filter(Boolean)
-      : Array.isArray(data.topics) 
-        ? data.topics 
-        : [],
-    maxParticipants: data.type === 'group' ? parseInt(data.maxParticipants as string) || 5 : undefined,
-    duration: parseInt(data.duration as string) || 60,
-    price: parseInt(data.price as string) || 0
+    ...data,
+    duration: parseInt(data.duration as string),
+    price: parseInt(data.price as string),
+    maxParticipants: data.maxParticipants ? parseInt(data.maxParticipants) : undefined,
+    topics: data.topics ? (data.topics as string).split(',').map(t => t.trim()) : []
   };
 
   const response = await api.post('/mentor/session-types', sessionTypeData);
@@ -32,8 +26,7 @@ export const updateSessionType = async (id: string, data: Partial<SessionType>) 
 };
 
 export const deleteSessionType = async (id: string) => {
-  const response = await api.delete(`/mentor/session-types/${id}`);
-  return response.data;
+  await api.delete(`/mentor/session-types/${id}`);
 };
 
 // Sessions
