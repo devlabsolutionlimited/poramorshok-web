@@ -1,10 +1,10 @@
 import axios from 'axios';
 import type { LoginCredentials, RegisterData, AuthResponse } from '@/types/auth';
 
-const API_URL ='http://127.0.0.1:5173/api';
+import { config } from '@/lib/config';
 
 // Configure axios defaults
-axios.defaults.baseURL = API_URL;
+axios.defaults.baseURL = config.apiUrl;
 axios.defaults.withCredentials = true;
 
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
