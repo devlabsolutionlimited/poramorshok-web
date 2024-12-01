@@ -2,6 +2,7 @@ import { validationResult } from 'express-validator';
 import { AuthService } from '../services/auth.service.js';
 import { ApiError } from '../utils/ApiError.js';
 import { logger } from '../utils/logger.js';
+import { generateToken } from '../utils/jwt.js';
 
 export const register = async (req, res, next) => {
   try {
@@ -14,12 +15,14 @@ export const register = async (req, res, next) => {
 
     logger.info(`Attempting to register user with email: ${email}`);
 
-    const { user, token } = await AuthService.register({
+    const user = await AuthService.register({
       name,
       email,
       password,
       role
     });
+
+    const token = generateToken(user._id);
 
     res.status(201).json({
       user: {
@@ -47,7 +50,8 @@ export const login = async (req, res, next) => {
 
     logger.info(`Login attempt for email: ${email}`);
 
-    const { user, token } = await AuthService.login(email, password);
+    const user = await AuthService.login(email, password);
+    const token = generateToken(user._id);
 
     res.json({
       user: {
