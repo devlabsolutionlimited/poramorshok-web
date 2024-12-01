@@ -9,11 +9,17 @@ export const getSessionTypes = async () => {
 export const createSessionType = async (data: Partial<SessionType>) => {
   // Transform the data to match server expectations
   const sessionTypeData = {
-    ...data,
-    topics: Array.isArray(data.topics) ? data.topics : [],
-    maxParticipants: data.type === 'group' ? Number(data.maxParticipants) : undefined,
-    duration: Number(data.duration),
-    price: Number(data.price)
+    title: data.title?.trim(),
+    description: data.description?.trim(),
+    type: data.type || 'one-on-one',
+    topics: typeof data.topics === 'string' 
+      ? data.topics.split(',').map(t => t.trim()).filter(Boolean)
+      : Array.isArray(data.topics) 
+        ? data.topics 
+        : [],
+    maxParticipants: data.type === 'group' ? parseInt(data.maxParticipants as string) || 5 : undefined,
+    duration: parseInt(data.duration as string) || 60,
+    price: parseInt(data.price as string) || 0
   };
 
   const response = await api.post('/mentor/session-types', sessionTypeData);
