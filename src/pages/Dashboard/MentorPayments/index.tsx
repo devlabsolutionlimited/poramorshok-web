@@ -25,9 +25,9 @@ export default function MentorPayments() {
   if (!stats) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold">Error Loading Data</h2>
+        <h2 className="text-2xl font-bold">No Payment Data</h2>
         <p className="text-muted-foreground">
-          Unable to load payment information. Please try again later.
+          You don't have any payment information yet.
         </p>
       </div>
     );
