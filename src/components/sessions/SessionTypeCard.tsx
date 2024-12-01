@@ -33,17 +33,13 @@ export default function SessionTypeCard({
 
   const handleDelete = async () => {
     try {
+      if (!confirm('Are you sure you want to delete this session type?')) {
+        return;
+      }
+      
       await onDelete(sessionType.id);
-      toast({
-        title: 'Session Type Deleted',
-        description: 'The session type has been deleted successfully.',
-      });
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete session type. Please try again.',
-        variant: 'destructive',
-      });
+      console.error('Error in SessionTypeCard delete:', error);
     }
   };
 
