@@ -3,7 +3,7 @@ import { ApiError, NetworkError, AuthenticationError } from './errors';
 import config from './config';
 
 const http = axios.create({
-  baseURL: `${config.apiUrl}/api`,
+  baseURL: config.apiUrl,
   headers: {
     'Content-Type': 'application/json'
   },
