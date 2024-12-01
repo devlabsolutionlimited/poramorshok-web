@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { ApiError, NetworkError, AuthenticationError } from './errors';
 import config from './config';
 
@@ -6,11 +6,10 @@ const http = axios.create({
   baseURL: config.apiUrl,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest'
+    'Accept': 'application/json'
   },
   withCredentials: true,
-  timeout: 60000 // 60 seconds timeout
+  timeout: 30000 // 30 seconds
 });
 
 // Request interceptor
@@ -28,7 +27,7 @@ http.interceptors.request.use(
 // Response interceptor
 http.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  (error) => {
     if (!error.response) {
       throw new NetworkError('Network error occurred. Please check your connection.');
     }
@@ -37,8 +36,6 @@ http.interceptors.response.use(
 
     if (status === 401) {
       localStorage.removeItem('token');
-      http.defaults.headers.common['Authorization'] = '';
-      window.location.href = '/login';
       throw new AuthenticationError(data?.message || 'Authentication failed');
     }
 
