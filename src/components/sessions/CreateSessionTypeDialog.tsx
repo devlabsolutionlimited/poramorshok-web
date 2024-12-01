@@ -32,8 +32,8 @@ import {
 const sessionTypeSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  duration: z.string().min(1, 'Duration is required'),
-  price: z.string().min(1, 'Price is required'),
+  duration: z.string(),
+  price: z.string(),
   type: z.enum(['one-on-one', 'group']),
   maxParticipants: z.string().optional(),
   topics: z.string().min(1, 'Topics are required'),
