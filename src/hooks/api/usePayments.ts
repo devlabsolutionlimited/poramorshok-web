@@ -20,7 +20,7 @@ export function usePayments() {
   const statsQuery = useQuery({
     queryKey: ['payment-stats'],
     queryFn: getPaymentStats,
-    staleTime: 0, // Always fetch fresh data
+    staleTime: 0,
     retry: 3,
     retryDelay: 1000,
     onError: (error) => {
