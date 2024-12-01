@@ -19,26 +19,29 @@ export function useMentorSessions() {
   const sessionsQuery = useQuery({
     queryKey: ['mentor-sessions'],
     queryFn: getMentorSessions,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // Always fetch fresh data
     retry: 3
   });
 
   const statsQuery = useQuery({
     queryKey: ['session-stats'],
     queryFn: getSessionStats,
-    staleTime: 1000 * 60 * 5 // 5 minutes
+    staleTime: 0 // Always fetch fresh data
   });
 
   const sessionTypesQuery = useQuery({
     queryKey: ['session-types'],
     queryFn: getSessionTypes,
-    staleTime: 1000 * 60 * 5 // 5 minutes
+    staleTime: 0 // Always fetch fresh data
   });
 
   const createSessionTypeMutation = useMutation({
     mutationFn: createSessionType,
     onSuccess: () => {
+      // Invalidate both session types and dashboard stats
       queryClient.invalidateQueries({ queryKey: ['session-types'] });
+      queryClient.invalidateQueries({ queryKey: ['mentor-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['session-stats'] });
       toast({
         title: 'Success',
         description: 'Session type created successfully',
