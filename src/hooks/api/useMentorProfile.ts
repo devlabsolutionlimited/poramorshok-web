@@ -16,11 +16,22 @@ export function useMentorProfile() {
 
   const profileQuery = useQuery({
     queryKey: ['mentor-profile'],
-    queryFn: getMentorProfile
+    queryFn: getMentorProfile,
+    staleTime: 0, // Always fetch fresh data
+    retry: 3
   });
 
   const updateBasicInfoMutation = useMutation({
     mutationFn: updateBasicInfo,
+    onMutate: async (newData) => {
+      await queryClient.cancelQueries({ queryKey: ['mentor-profile'] });
+      const previousProfile = queryClient.getQueryData(['mentor-profile']);
+      queryClient.setQueryData(['mentor-profile'], (old: any) => ({
+        ...old,
+        ...newData
+      }));
+      return { previousProfile };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mentor-profile'] });
       toast({
@@ -28,7 +39,10 @@ export function useMentorProfile() {
         description: 'Your basic information has been updated successfully.',
       });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _variables, context) => {
+      if (context?.previousProfile) {
+        queryClient.setQueryData(['mentor-profile'], context.previousProfile);
+      }
       toast({
         title: 'Error',
         description: error.message || 'Failed to update profile',
