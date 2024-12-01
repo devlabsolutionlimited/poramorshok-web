@@ -3,10 +3,10 @@ export interface PaymentStats {
   pendingPayouts: number;
   nextPayout: string;
   totalEarnings: number;
-  monthlyEarnings: {
+  monthlyEarnings: Array<{
     month: string;
     amount: number;
-  }[];
+  }>;
 }
 
 export interface Transaction {
@@ -53,14 +53,4 @@ export interface Earning {
   platformFee: number;
   netAmount: number;
   createdAt: string;
-}
-
-export interface EarningStats {
-  totalEarnings: number;
-  pendingAmount: number;
-  availableBalance: number;
-  monthlyEarnings: Array<{
-    month: string;
-    amount: number;
-  }>;
 }
