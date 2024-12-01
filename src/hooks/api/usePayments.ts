@@ -19,26 +19,42 @@ export function usePayments() {
   // Stats Query
   const statsQuery = useQuery({
     queryKey: ['payment-stats'],
-    queryFn: getPaymentStats,
-    staleTime: 1000 * 60 * 5 // 5 minutes
+    queryFn: getPaymentStats, 
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 3,
+    retryDelay: 1000
   });
 
   // Payment Methods Query
   const methodsQuery = useQuery({
     queryKey: ['payment-methods'],
-    queryFn: getPaymentMethods
+    queryFn: getPaymentMethods,
+    retry: 3,
+    retryDelay: 1000
   });
 
   // Transactions Query
   const transactionsQuery = useQuery({
     queryKey: ['transactions'],
-    queryFn: getTransactions
+    queryFn: getTransactions,
+    retry: 3,
+    retryDelay: 1000,
+    onError: (error) => {
+      console.error('Failed to fetch transactions:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load transaction history. Please try again later.',
+        variant: 'destructive',
+      });
+    }
   });
 
   // Withdrawals Query
   const withdrawalsQuery = useQuery({
     queryKey: ['withdrawals'],
-    queryFn: getWithdrawals
+    queryFn: getWithdrawals,
+    retry: 3,
+    retryDelay: 1000
   });
 
   // Add Payment Method Mutation
