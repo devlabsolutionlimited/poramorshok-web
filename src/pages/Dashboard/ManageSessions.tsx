@@ -57,13 +57,30 @@ export default function ManageSessions() {
     });
   };
 
-  const handleCreateSessionType = async (data: Partial<SessionType>) => {
-    await createSessionType(data);
-    setIsCreateTypeModalOpen(false);
-    toast({
-      title: 'Success',
-      description: 'Session type created successfully. It will appear in the list shortly.',
-    });
+  const handleCreateSessionType = async (formData: any) => {
+    try {
+      const sessionTypeData = {
+        ...formData,
+        topics: formData.topics.split(',').map((t: string) => t.trim()),
+        duration: Number(formData.duration),
+        price: Number(formData.price),
+        maxParticipants: formData.type === 'group' ? Number(formData.maxParticipants) : undefined
+      };
+
+      await createSessionType(sessionTypeData);
+      setIsCreateTypeModalOpen(false);
+      toast({
+        title: 'Success',
+        description: 'Session type created successfully. It will appear in the list shortly.',
+      });
+    } catch (error) {
+      console.error('Error creating session type:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create session type. Please check your input and try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleUpdateSessionType = async (id: string, data: Partial<SessionType>) => {
