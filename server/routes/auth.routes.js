@@ -4,6 +4,7 @@ import { register, login, getMe } from '../controllers/auth.controller.js';
 import { protect } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 
+// Validation middleware
 const router = express.Router();
 
 // Validation middleware
@@ -19,8 +20,11 @@ const loginValidation = [
   body('password').exists().withMessage('Password is required')
 ];
 
+// Public routes
 router.post('/register', validate(registerValidation), register);
 router.post('/login', validate(loginValidation), login);
+
+// Protected routes
 router.get('/me', protect, getMe);
 
 export default router;
