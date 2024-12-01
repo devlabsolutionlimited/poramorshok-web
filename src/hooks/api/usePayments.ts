@@ -20,9 +20,17 @@ export function usePayments() {
   const statsQuery = useQuery({
     queryKey: ['payment-stats'],
     queryFn: getPaymentStats, 
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60, // 1 minute
     retry: 3,
-    retryDelay: 1000
+    retryDelay: 1000,
+    onError: (error) => {
+      console.error('Failed to fetch payment stats:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load payment information. Please try again later.',
+        variant: 'destructive',
+      });
+    }
   });
 
   // Payment Methods Query
