@@ -1,32 +1,16 @@
-import api from '@/lib/http';
+import http from '@/lib/http';
 import type { PaymentMethod, PaymentStats, Transaction, WithdrawalRequest } from '@/types/payment';
 
 // Payment Stats
 export const getPaymentStats = async (): Promise<PaymentStats> => {
-  try {
-    const response = await api.get('/api/mentor/payments/stats');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching payment stats:', error);
-    return {
-      balance: 0,
-      pendingPayouts: 0,
-      nextPayout: new Date().toISOString(),
-      totalEarnings: 0,
-      monthlyEarnings: []
-    };
-  }
+  const response = await http.get('/mentor/payments/stats');
+  return response.data;
 };
 
 // Payment Methods
 export const getPaymentMethods = async (): Promise<PaymentMethod[]> => {
-  try {
-    const response = await api.get('/api/mentor/payments/methods');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching payment methods:', error);
-    return [];
-  }
+  const response = await http.get('/mentor/payments/methods');
+  return response.data;
 };
 
 export const addPaymentMethod = async (data: Partial<PaymentMethod>): Promise<PaymentMethod> => {
@@ -35,42 +19,32 @@ export const addPaymentMethod = async (data: Partial<PaymentMethod>): Promise<Pa
     number: data.type !== 'bank' ? data.number?.replace(/\s+/g, '') : undefined,
   };
 
-  const response = await api.post('/api/mentor/payments/methods', formattedData);
+  const response = await http.post('/mentor/payments/methods', formattedData);
   return response.data;
 };
 
 export const updatePaymentMethod = async (id: string, data: Partial<PaymentMethod>): Promise<PaymentMethod> => {
-  const response = await api.put(`/api/mentor/payments/methods/${id}`, data);
+  const response = await http.put(`/mentor/payments/methods/${id}`, data);
   return response.data;
 };
 
 export const deletePaymentMethod = async (id: string): Promise<void> => {
-  await api.delete(`/api/mentor/payments/methods/${id}`);
+  await http.delete(`/mentor/payments/methods/${id}`);
 };
 
 // Transactions
 export const getTransactions = async (): Promise<Transaction[]> => {
-  try {
-    const response = await api.get('/api/mentor/payments/transactions');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching transactions:', error);
-    return [];
-  }
+  const response = await http.get('/mentor/payments/transactions');
+  return response.data;
 };
 
 // Withdrawals
 export const requestWithdrawal = async (data: WithdrawalRequest): Promise<void> => {
-  const response = await api.post('/api/mentor/payments/withdraw', data);
+  const response = await http.post('/mentor/payments/withdraw', data);
   return response.data;
 };
 
 export const getWithdrawals = async () => {
-  try {
-    const response = await api.get('/api/mentor/payments/withdrawals');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching withdrawals:', error);
-    return [];
-  }
+  const response = await http.get('/mentor/payments/withdrawals');
+  return response.data;
 };
