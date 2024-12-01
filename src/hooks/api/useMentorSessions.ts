@@ -37,22 +37,46 @@ export function useMentorSessions() {
 
   const createSessionTypeMutation = useMutation({
     mutationFn: createSessionType,
+    onMutate: async (newSessionType) => {
+      await queryClient.cancelQueries({ queryKey: ['session-types'] });
+
+      const previousSessionTypes = queryClient.getQueryData(['session-types']);
+
+      queryClient.setQueryData(['session-types'], (old: any) => {
+        const newTypes = old ? [...old] : [];
+        newTypes.push({
+          ...newSessionType,
+          id: Date.now().toString(),
+          totalBookings: 0,
+          rating: 0,
+          reviews: 0
+        });
+        return newTypes;
+      });
+      
+      return { previousSessionTypes };
+    },
     onSuccess: () => {
-      // Invalidate both session types and dashboard stats
       queryClient.invalidateQueries({ queryKey: ['session-types'] });
-      queryClient.invalidateQueries({ queryKey: ['mentor-dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['session-stats'] });
       toast({
         title: 'Success',
         description: 'Session type created successfully',
       });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _variables, context) => {
+      if (context?.previousSessionTypes) {
+        queryClient.setQueryData(['session-types'], context.previousSessionTypes);
+      }
+      console.error('Create session type error:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create session type',
+        description: 'Failed to create session type. Please try again.',
         variant: 'destructive',
       });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['session-types'] });
+      queryClient.invalidateQueries({ queryKey: ['mentor-dashboard'] });
     }
   });
 
