@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useNavigate, useLocation } from 'react-router-dom';
 import { login as loginApi, register as registerApi, getCurrentUser, logout as logoutApi } from '@/lib/auth';
 import type { LoginCredentials, RegisterData, User } from '@/types/auth';
+import api from '@/lib/http';
 
 interface AuthContextType {
   user: User | null;
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const token = localStorage.getItem('token');
       if (token) {
         try {
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           const user = await getCurrentUser();
           setUser(user);
         } catch (error) {
