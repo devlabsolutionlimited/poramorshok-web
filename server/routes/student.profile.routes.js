@@ -6,7 +6,6 @@ import { upload } from '../config/multer.js';
 import {
   getProfile,
   updateProfile,
-  updateNotificationPreferences,
   updateAvatar
 } from '../controllers/student.profile.controller.js';
 
@@ -28,9 +27,6 @@ router.put('/profile',
     body('education.institution').optional().isString(),
     body('education.field').optional().isString(),
     body('education.graduationYear').optional().isInt({ min: 1900, max: new Date().getFullYear() + 10 }),
-    body('socialLinks').optional().isArray(),
-    body('socialLinks.*.platform').optional().isIn(['linkedin', 'github', 'twitter', 'website']),
-    body('socialLinks.*.url').optional().isURL(),
     validate
   ],
   updateProfile
@@ -39,16 +35,6 @@ router.put('/profile',
 router.put('/profile/avatar',
   upload.single('avatar'),
   updateAvatar
-);
-
-router.put('/profile/notifications',
-  [
-    body('email').isBoolean(),
-    body('sessionReminders').isBoolean(),
-    body('marketingUpdates').isBoolean(),
-    validate
-  ],
-  updateNotificationPreferences
 );
 
 export default router;
