@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { ApiError } from '../utils/ApiError.js';
 import User from '../models/User.js';
+import MentorProfile from '../models/MentorProfile.js';
 import { logger } from '../utils/logger.js';
 
 export const protect = async (req, res, next) => {
@@ -28,6 +29,15 @@ export const protect = async (req, res, next) => {
 
       if (user.status !== 'active') {
         throw new ApiError(401, 'Account is not active');
+      }
+
+      // If user is a mentor, ensure they have a profile
+      if (user.role === 'mentor') {
+        const mentorProfile = await MentorProfile.findOne({ userId: user._id });
+        if (!mentorProfile) {
+          // Create default profile if it doesn't exist
+          await MentorProfile.createDefaultProfile(user._id);
+        }
       }
 
       req.user = user;
