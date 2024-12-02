@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 interface StatusModalProps {
   isOpen: boolean;
@@ -19,32 +19,32 @@ export function StatusModal({ isOpen, onClose, status, message }: StatusModalPro
     loading: {
       icon: Loader2,
       title: 'Processing',
-      color: 'text-blue-500',
-      animation: 'animate-spin'
+      className: 'text-blue-500 animate-spin'
     },
     success: {
-      icon: CheckCircle2,
+      icon: CheckCircle,
       title: 'Success',
-      color: 'text-green-500'
+      className: 'text-green-500'
     },
     error: {
       icon: XCircle,
       title: 'Error',
-      color: 'text-red-500'
+      className: 'text-red-500'
     }
   };
 
-  const config = statusConfig[status];
-  const Icon = config.icon;
+  const Icon = statusConfig[status].icon;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-            <Icon className={`h-6 w-6 ${config.color} ${config.animation || ''}`} />
+            <Icon className={`h-6 w-6 ${statusConfig[status].className}`} />
           </div>
-          <DialogTitle className="text-center">{config.title}</DialogTitle>
+          <DialogTitle className="text-center pt-4">
+            {statusConfig[status].title}
+          </DialogTitle>
           {message && (
             <DialogDescription className="text-center">
               {message}
