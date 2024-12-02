@@ -1,4 +1,3 @@
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -6,44 +5,32 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface StatusModalProps {
   isOpen: boolean;
   onClose: () => void;
   status: 'loading' | 'success' | 'error';
-  title?: string;
   message?: string;
 }
 
-export function StatusModal({ 
-  isOpen, 
-  onClose, 
-  status, 
-  title, 
-  message 
-}: StatusModalProps) {
+export function StatusModal({ isOpen, onClose, status, message }: StatusModalProps) {
   const statusConfig = {
     loading: {
       icon: Loader2,
-      title: title || 'Processing',
-      message: message || 'Please wait while we process your request...',
+      title: 'Processing',
       color: 'text-blue-500',
-      showClose: false
+      animation: 'animate-spin'
     },
     success: {
-      icon: CheckCircle,
-      title: title || 'Success',
-      message: message || 'Operation completed successfully.',
-      color: 'text-green-500',
-      showClose: true
+      icon: CheckCircle2,
+      title: 'Success',
+      color: 'text-green-500'
     },
     error: {
-      icon: XCircle,
-      title: title || 'Error',
-      message: message || 'An error occurred. Please try again.',
-      color: 'text-red-500',
-      showClose: true
+      icon: AlertCircle,
+      title: 'Error',
+      color: 'text-red-500'
     }
   };
 
@@ -51,22 +38,19 @@ export function StatusModal({
   const Icon = config.icon;
 
   return (
-    <Dialog open={isOpen} onOpenChange={config.showClose ? onClose : undefined}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-            <Icon className={`h-6 w-6 ${config.color} ${status === 'loading' ? 'animate-spin' : ''}`} />
+            <Icon className={`h-6 w-6 ${config.color} ${config.animation || ''}`} />
           </div>
           <DialogTitle className="text-center">{config.title}</DialogTitle>
-          <DialogDescription className="text-center">
-            {config.message}
-          </DialogDescription>
+          {message && (
+            <DialogDescription className="text-center">
+              {message}
+            </DialogDescription>
+          )}
         </DialogHeader>
-        {config.showClose && (
-          <div className="mt-4 flex justify-center">
-            <Button onClick={onClose}>Close</Button>
-          </div>
-        )}
       </DialogContent>
     </Dialog>
   );
