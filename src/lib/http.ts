@@ -2,11 +2,6 @@ import axios, { AxiosError } from 'axios';
 import { ApiError, NetworkError, AuthenticationError } from './errors';
 import config from './config';
 
-interface ErrorResponse {
-  message?: string;
-  errors?: any[];
-}
-
 const http = axios.create({
   baseURL: config.apiUrl,
   headers: {
@@ -19,6 +14,14 @@ const http = axios.create({
 // Request interceptor
 http.interceptors.request.use(
   (config) => {
+    // Check for admin token first
+    const adminToken = localStorage.getItem('adminToken');
+    if (adminToken) {
+      config.headers.Authorization = `Bearer ${adminToken}`;
+      return config;
+    }
+
+    // Fall back to regular user token
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -31,7 +34,7 @@ http.interceptors.request.use(
 // Response interceptor
 http.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<ErrorResponse>) => {
+  (error: AxiosError) => {
     if (!error.response) {
       console.error('Network error:', error.message);
       throw new NetworkError('Network error occurred. Please check your connection.');
@@ -48,18 +51,25 @@ http.interceptors.response.use(
     });
 
     if (status === 401) {
-      localStorage.removeItem('token');
-      delete http.defaults.headers.common['Authorization'];
-      window.location.href = '/login';
+      // Check if this is an admin route
+      if (error.config?.url?.includes('/admin')) {
+        localStorage.removeItem('adminToken');
+        delete http.defaults.headers.common['Authorization'];
+        window.location.href = '/admin/login';
+      } else {
+        localStorage.removeItem('token');
+        delete http.defaults.headers.common['Authorization'];
+        window.location.href = '/login';
+      }
       throw new AuthenticationError(
-        (data && data.message) || 'Authentication failed. Please log in again.'
+        (data && (data as any).message) || 'Authentication failed. Please log in again.'
       );
     }
 
     throw new ApiError(
       status,
-      (data && data.message) || 'An unexpected error occurred',
-      (data && data.errors) || []
+      (data && (data as any).message) || 'An unexpected error occurred',
+      (data && (data as any).errors) || []
     );
   }
 );
