@@ -1,5 +1,5 @@
-import PaymentMethod from '../models/Payment.js';
 import MentorProfile from '../models/MentorProfile.js';
+import PaymentMethod from '../models/Payment.js';
 import { ApiError } from '../utils/ApiError.js';
 import { logger } from '../utils/logger.js';
 
@@ -122,6 +122,32 @@ export const deletePaymentMethod = async (req, res, next) => {
     res.status(204).send();
   } catch (error) {
     logger.error('Delete payment method error:', error);
+    next(error);
+  }
+};
+
+export const getTransactions = async (req, res, next) => {
+  try {
+    const profile = await MentorProfile.findOne({ userId: req.user._id });
+    if (!profile) {
+      throw new ApiError(404, 'Mentor profile not found');
+    }
+
+    // Mock transactions for now
+    const transactions = [
+      {
+        id: '1',
+        type: 'earning',
+        amount: 2000,
+        date: new Date(),
+        status: 'completed',
+        description: 'Session payment received'
+      }
+    ];
+
+    res.json(transactions);
+  } catch (error) {
+    logger.error('Get transactions error:', error);
     next(error);
   }
 };
