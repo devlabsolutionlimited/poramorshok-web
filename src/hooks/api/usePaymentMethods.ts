@@ -14,15 +14,31 @@ export function usePaymentMethods() {
 
   const query = useQuery({
     queryKey: ['payment-methods'],
-    queryFn: getPaymentMethods
+    queryFn: getPaymentMethods,
+    staleTime: 1000 * 60 // 1 minute
   });
 
   const addMutation = useMutation({
     mutationFn: addPaymentMethod,
-    onSuccess: (newMethod) => {
-      // Update cache optimistically
+    onMutate: async (newMethod) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['payment-methods'] });
+
+      // Snapshot the previous value
+      const previousMethods = queryClient.getQueryData(['payment-methods']);
+
+      // Optimistically update to the new value
       queryClient.setQueryData<PaymentMethod[]>(['payment-methods'], (old = []) => {
-        return [...old, newMethod];
+        return [...old, { id: 'temp-id', ...newMethod } as PaymentMethod];
+      });
+
+      return { previousMethods };
+    },
+    onSuccess: (newMethod) => {
+      queryClient.setQueryData<PaymentMethod[]>(['payment-methods'], (old = []) => {
+        return old.map(method => 
+          method.id === 'temp-id' ? newMethod : method
+        );
       });
       
       toast({
@@ -30,7 +46,12 @@ export function usePaymentMethods() {
         description: 'Payment method added successfully',
       });
     },
-    onError: (error) => {
+    onError: (error, _, context) => {
+      // Rollback to the previous value
+      if (context?.previousMethods) {
+        queryClient.setQueryData(['payment-methods'], context.previousMethods);
+      }
+      
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to add payment method',
