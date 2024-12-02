@@ -117,7 +117,9 @@ const mentorSchema = new mongoose.Schema({
     default: false
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 // Index for searching
@@ -134,4 +136,24 @@ mentorSchema.methods.updateRating = async function(rating) {
   await this.save();
 };
 
-export default mongoose.model('Mentor', mentorSchema);
+// Virtual for total earnings
+mentorSchema.virtual('totalEarnings', {
+  ref: 'Earning',
+  localField: 'userId',
+  foreignField: 'userId',
+  match: { status: 'completed' },
+  get: function(earnings) {
+    return earnings?.reduce((sum, earning) => sum + earning.netAmount, 0) || 0;
+  }
+});
+
+// Virtual for total sessions
+mentorSchema.virtual('totalSessions', {
+  ref: 'Session',
+  localField: 'userId',
+  foreignField: 'mentorId',
+  count: true
+});
+
+const Mentor = mongoose.model('Mentor', mentorSchema);
+export default Mentor;
