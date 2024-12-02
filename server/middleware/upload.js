@@ -1,11 +1,30 @@
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs/promises';
 import { ApiError } from '../utils/ApiError.js';
+
+// Ensure upload directories exist
+const createUploadDirs = async () => {
+  const dirs = [
+    'uploads',
+    'uploads/avatars',
+    'uploads/temp'
+  ];
+
+  for (const dir of dirs) {
+    await fs.mkdir(path.join(process.cwd(), dir), { recursive: true });
+  }
+};
+
+// Create upload directories on startup
+createUploadDirs().catch(console.error);
 
 // Configure storage
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(process.cwd(), 'uploads', 'avatars'));
+  destination: async function (req, file, cb) {
+    const uploadDir = path.join(process.cwd(), 'uploads', 'avatars');
+    await fs.mkdir(uploadDir, { recursive: true });
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
