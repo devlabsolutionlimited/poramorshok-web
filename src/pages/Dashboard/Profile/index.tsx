@@ -1,5 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageLoader } from '@/components/ui/page-loader';
+import { useAuth } from '@/contexts/AuthContext';
+import StudentProfile from './StudentProfile';
 import BasicInfo from './BasicInfo';
 import Expertise from './Expertise';
 import Education from './Education';
@@ -7,10 +9,17 @@ import SocialLinks from './SocialLinks';
 import { useMentorProfile } from '@/hooks/api/useMentorProfile';
 
 export default function Profile() {
+  const { user } = useAuth();
   const { profile, isLoading } = useMentorProfile();
+  const isMentor = user?.role === 'mentor';
 
   if (isLoading) {
     return <PageLoader />;
+  }
+
+  // Show student profile if user is a student
+  if (!isMentor) {
+    return <StudentProfile />;
   }
 
   if (!profile) {
