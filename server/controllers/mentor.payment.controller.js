@@ -6,12 +6,12 @@ import { logger } from '../utils/logger.js';
 export const getPaymentMethods = async (req, res, next) => {
   try {
     // First check if mentor profile exists
-    const mentor = await Mentor.findOne({ userId: req.user.id });
+    const mentor = await Mentor.findOne({ userId: req.user._id });
     if (!mentor) {
       throw new ApiError(404, 'Mentor profile not found');
     }
 
-    const methods = await PaymentMethod.find({ userId: req.user.id });
+    const methods = await PaymentMethod.find({ userId: req.user._id });
     res.json(methods);
   } catch (error) {
     logger.error('Get payment methods error:', error);
@@ -22,7 +22,7 @@ export const getPaymentMethods = async (req, res, next) => {
 export const addPaymentMethod = async (req, res, next) => {
   try {
     // First check if mentor profile exists
-    const mentor = await Mentor.findOne({ userId: req.user.id });
+    const mentor = await Mentor.findOne({ userId: req.user._id });
     if (!mentor) {
       throw new ApiError(404, 'Mentor profile not found');
     }
@@ -46,11 +46,11 @@ export const addPaymentMethod = async (req, res, next) => {
     }
 
     // Check if it's the first payment method for the user
-    const existingMethods = await PaymentMethod.countDocuments({ userId: req.user.id });
+    const existingMethods = await PaymentMethod.countDocuments({ userId: req.user._id });
     const isDefault = existingMethods === 0;
 
     const method = await PaymentMethod.create({
-      userId: req.user.id,
+      userId: req.user._id,
       type,
       number,
       accountName,
@@ -69,13 +69,13 @@ export const addPaymentMethod = async (req, res, next) => {
 
 export const updatePaymentMethod = async (req, res, next) => {
   try {
-    const mentor = await Mentor.findOne({ userId: req.user.id });
+    const mentor = await Mentor.findOne({ userId: req.user._id });
     if (!mentor) {
       throw new ApiError(404, 'Mentor profile not found');
     }
 
     const method = await PaymentMethod.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.id },
+      { _id: req.params.id, userId: req.user._id },
       req.body,
       { new: true, runValidators: true }
     );
@@ -93,14 +93,14 @@ export const updatePaymentMethod = async (req, res, next) => {
 
 export const deletePaymentMethod = async (req, res, next) => {
   try {
-    const mentor = await Mentor.findOne({ userId: req.user.id });
+    const mentor = await Mentor.findOne({ userId: req.user._id });
     if (!mentor) {
       throw new ApiError(404, 'Mentor profile not found');
     }
 
     const method = await PaymentMethod.findOneAndDelete({
       _id: req.params.id,
-      userId: req.user.id
+      userId: req.user._id
     });
 
     if (!method) {
@@ -109,7 +109,7 @@ export const deletePaymentMethod = async (req, res, next) => {
 
     // If deleted method was default, set another method as default
     if (method.isDefault) {
-      const anotherMethod = await PaymentMethod.findOne({ userId: req.user.id });
+      const anotherMethod = await PaymentMethod.findOne({ userId: req.user._id });
       if (anotherMethod) {
         anotherMethod.isDefault = true;
         await anotherMethod.save();
@@ -125,7 +125,10 @@ export const deletePaymentMethod = async (req, res, next) => {
 
 export const getPaymentStats = async (req, res, next) => {
   try {
-    const mentor = await Mentor.findOne({ userId: req.user.id });
+    const mentor = await Mentor.findOne({ userId: req.user._id })
+      .populate('totalEarnings')
+      .populate('totalSessions');
+
     if (!mentor) {
       throw new ApiError(404, 'Mentor profile not found');
     }
@@ -136,10 +139,10 @@ export const getPaymentStats = async (req, res, next) => {
     nextPayout.setMonth(nextPayout.getMonth() + 1);
 
     res.json({
-      balance: 0, // Implement actual balance calculation
+      balance: mentor.totalEarnings || 0,
       pendingPayouts: 0, // Implement actual pending payouts calculation
       nextPayout: nextPayout.toISOString(),
-      totalEarnings: 0, // Implement actual earnings calculation
+      totalEarnings: mentor.totalEarnings || 0,
       monthlyEarnings: [] // Implement actual monthly earnings calculation
     });
   } catch (error) {
