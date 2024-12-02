@@ -37,6 +37,8 @@ router.post(
       .notEmpty().withMessage('Account number is required'),
     body('bankName').if(body('type').equals('bank'))
       .notEmpty().withMessage('Bank name is required'),
+    body('branchName').if(body('type').equals('bank'))
+      .notEmpty().withMessage('Branch name is required'),
     validate
   ],
   addPaymentMethod
@@ -50,6 +52,7 @@ router.put(
     body('accountName').optional().notEmpty(),
     body('accountNumber').optional().notEmpty(),
     body('bankName').optional().notEmpty(),
+    body('branchName').optional().notEmpty(),
     validate
   ],
   updatePaymentMethod
