@@ -8,7 +8,8 @@ import {
   addPaymentMethod,
   updatePaymentMethod,
   deletePaymentMethod,
-  getPaymentStats
+  getPaymentStats,
+  getTransactions
 } from '../controllers/mentor.payment.controller.js';
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.get('/stats', getPaymentStats);
 
 // Payment Methods
 router.get('/methods', getPaymentMethods);
+router.get('/transactions', getTransactions);
 
 router.post(
   '/methods',
