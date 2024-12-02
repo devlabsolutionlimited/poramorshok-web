@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import { rateLimit } from 'express-rate-limit';
 import { errorHandler } from '../middleware/errorHandler.js';
 import authRoutes from '../routes/auth.routes.js';
+import adminAuthRoutes from '../routes/admin.auth.routes.js';
 import mentorRoutes from '../routes/mentor.routes.js';
 import mentorPaymentRoutes from '../routes/mentor.payment.routes.js';
 import mentorProfileRoutes from '../routes/mentor.profile.routes.js';
@@ -16,6 +17,8 @@ import sessionRoutes from '../routes/session.routes.js';
 import messageRoutes from '../routes/message.routes.js';
 import paymentRoutes from '../routes/payment.routes.js';
 import studentDashboardRoutes from '../routes/student.dashboard.routes.js';
+import studentProfileRoutes from '../routes/student.profile.routes.js';
+import studentPaymentRoutes from '../routes/student.payment.routes.js';
 
 export const configureExpress = () => {
   const app = express();
@@ -69,6 +72,7 @@ export const configureExpress = () => {
 
   // API Routes
   app.use('/api/auth', authRoutes);
+  app.use('/api/admin/auth', adminAuthRoutes);
   app.use('/api/mentors', mentorRoutes);
   app.use('/api/mentor/payments', mentorPaymentRoutes);
   app.use('/api/mentor/profile', mentorProfileRoutes);
@@ -80,6 +84,8 @@ export const configureExpress = () => {
   app.use('/api/messages', messageRoutes);
   app.use('/api/payments', paymentRoutes);
   app.use('/api/student', studentDashboardRoutes);
+  app.use('/api/student', studentProfileRoutes);
+  app.use('/api/student/payments', studentPaymentRoutes);
 
   // Error handling
   app.use(errorHandler);
