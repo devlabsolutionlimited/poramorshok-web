@@ -4,17 +4,18 @@ import {
   createSessionType, 
   updateSessionType, 
   deleteSessionType 
-} from '@/lib/api/sessions';
+} from '@/lib/api/session-types';
 import { useToast } from '@/hooks/use-toast';
 import type { SessionType } from '@/types/session';
 
-export function useSessionTypes() {
+export function useSessionTypes(mentorId?: string) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const query = useQuery({
-    queryKey: ['session-types'],
-    queryFn: getSessionTypes
+    queryKey: ['session-types', mentorId],
+    queryFn: () => getSessionTypes(mentorId!),
+    enabled: !!mentorId
   });
 
   const createMutation = useMutation({
