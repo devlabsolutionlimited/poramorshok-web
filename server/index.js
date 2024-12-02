@@ -3,6 +3,8 @@ import { configureExpress } from './config/express.js';
 import { connectDB } from './config/db.js';
 import { initializeSocket } from './config/socket.js';
 import { logger } from './utils/logger.js';
+import express from 'express';
+import path from 'path';
 
 const startServer = async () => {
   const app = configureExpress();
@@ -27,6 +29,9 @@ const startServer = async () => {
         await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds before retrying
       }
     }
+
+    // Serve uploaded files
+    app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
     // Start server
     const server = app.listen(port, () => {
