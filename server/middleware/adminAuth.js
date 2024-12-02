@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { ApiError } from '../utils/ApiError.js';
 import Admin from '../models/Admin.js';
+import { logger } from '../utils/logger.js';
 
 export const adminProtect = async (req, res, next) => {
   try {
@@ -17,6 +18,11 @@ export const adminProtect = async (req, res, next) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+      // Verify this is an admin token
+      if (!decoded.isAdmin) {
+        throw new ApiError(401, 'Not authorized - Invalid token type');
+      }
+
       const admin = await Admin.findById(decoded.id).select('-password');
       if (!admin) {
         throw new ApiError(401, 'Admin not found');
@@ -29,6 +35,7 @@ export const adminProtect = async (req, res, next) => {
       req.user = admin;
       next();
     } catch (error) {
+      logger.error('Admin auth error:', error);
       throw new ApiError(401, 'Not authorized - Invalid token');
     }
   } catch (error) {
