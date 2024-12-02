@@ -39,6 +39,7 @@ export function useStudentProfile() {
     mutationFn: updateAvatar,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['student-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['auth-user'] });
       toast({
         title: 'Avatar Updated',
         description: 'Your profile picture has been updated successfully.',
