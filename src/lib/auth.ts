@@ -63,5 +63,10 @@ export const logout = () => {
 };
 
 export const isAuthenticated = (): boolean => {
-  return !!localStorage.getItem('token');
+  const token = localStorage.getItem('token');
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    return true;
+  }
+  return false;
 };
