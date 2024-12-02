@@ -14,10 +14,10 @@ export const getPaymentMethods = async (): Promise<PaymentMethod[]> => {
 };
 
 export const addPaymentMethod = async (data: Partial<PaymentMethod>): Promise<PaymentMethod> => {
-  // Format mobile numbers by removing spaces
+  // Format mobile numbers by removing spaces and special characters
   const formattedData = {
     ...data,
-    number: data.type !== 'bank' ? data.number?.replace(/\s+/g, '') : undefined,
+    number: data.type !== 'bank' ? data.number?.replace(/[^\d]/g, '') : undefined,
   };
 
   const response = await http.post('/mentor/payments/methods', formattedData);
