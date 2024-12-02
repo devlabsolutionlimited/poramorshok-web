@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -16,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Shield } from 'lucide-react';
-import { useAdmin } from '@/contexts/AdminContext';
+import { useAdminAuth } from '@/hooks/api/useAdminAuth';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -24,9 +23,8 @@ const loginSchema = z.object({
 });
 
 export default function AdminLogin() {
-  const navigate = useNavigate();
-  const { login } = useAdmin();
   const [error, setError] = useState<string | null>(null);
+  const { login, isLoggingIn } = useAdminAuth();
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -38,10 +36,10 @@ export default function AdminLogin() {
 
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
     try {
-      await login(data.email, data.password);
-      navigate('/admin');
+      setError(null);
+      await login(data);
     } catch (err) {
-      setError('Invalid credentials');
+      setError(err instanceof Error ? err.message : 'Login failed');
     }
   };
 
@@ -99,8 +97,8 @@ export default function AdminLogin() {
                 )}
               />
 
-              <Button type="submit" className="w-full">
-                Sign In
+              <Button type="submit" className="w-full" disabled={isLoggingIn}>
+                {isLoggingIn ? 'Signing in...' : 'Sign In'}
               </Button>
 
               {/* Demo Credentials */}
