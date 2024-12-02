@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAdmin } from '@/contexts/AdminContext';
+import { useAdminAuth } from '@/hooks/api/useAdminAuth';
 import AdminLogin from '@/pages/admin/auth/Login';
 import AdminDashboard from '@/pages/admin/Dashboard';
 import AdminUsers from '@/pages/admin/Users';
@@ -11,26 +11,35 @@ import AdminSettings from '@/pages/admin/Settings';
 import AdminContent from '@/pages/admin/Content';
 import AdminTransactions from '@/pages/admin/Transactions';
 import AdminLiveSupport from '@/pages/admin/LiveSupport';
-import FraudManagement from '@/pages/admin/FraudManagement';
+import AdminFraudManagement from '@/pages/admin/FraudManagement';
+import { PageLoader } from '@/components/ui/page-loader';
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAdmin();
+  const { adminUser, isLoading } = useAdminAuth();
 
-  if (loading) {
-    return null;
+  if (isLoading) {
+    return <PageLoader />;
   }
 
-  if (!user) {
-    return <Navigate to="/admin/login" />;
+  if (!adminUser) {
+    return <Navigate to="/admin/login" replace />;
   }
 
   return <>{children}</>;
 }
 
 export default function AdminRoutes() {
+  const { adminUser } = useAdminAuth();
+
+  // Redirect to dashboard if already logged in
+  if (adminUser && window.location.pathname === '/admin/login') {
+    return <Navigate to="/admin" replace />;
+  }
+
   return (
     <Routes>
       <Route path="/login" element={<AdminLogin />} />
+      
       <Route
         path="/"
         element={
@@ -39,6 +48,7 @@ export default function AdminRoutes() {
           </AdminRoute>
         }
       />
+      
       <Route
         path="/users"
         element={
@@ -47,6 +57,7 @@ export default function AdminRoutes() {
           </AdminRoute>
         }
       />
+      
       <Route
         path="/moderators"
         element={
@@ -55,6 +66,7 @@ export default function AdminRoutes() {
           </AdminRoute>
         }
       />
+      
       <Route
         path="/mentors"
         element={
@@ -63,6 +75,7 @@ export default function AdminRoutes() {
           </AdminRoute>
         }
       />
+      
       <Route
         path="/sessions"
         element={
@@ -71,6 +84,7 @@ export default function AdminRoutes() {
           </AdminRoute>
         }
       />
+      
       <Route
         path="/transactions"
         element={
@@ -79,6 +93,7 @@ export default function AdminRoutes() {
           </AdminRoute>
         }
       />
+      
       <Route
         path="/live-support"
         element={
@@ -87,6 +102,7 @@ export default function AdminRoutes() {
           </AdminRoute>
         }
       />
+      
       <Route
         path="/reports"
         element={
@@ -95,14 +111,16 @@ export default function AdminRoutes() {
           </AdminRoute>
         }
       />
+      
       <Route
         path="/fraud-management"
         element={
           <AdminRoute>
-            <FraudManagement />
+            <AdminFraudManagement />
           </AdminRoute>
         }
       />
+      
       <Route
         path="/settings"
         element={
@@ -111,6 +129,7 @@ export default function AdminRoutes() {
           </AdminRoute>
         }
       />
+      
       <Route
         path="/content"
         element={
@@ -119,6 +138,9 @@ export default function AdminRoutes() {
           </AdminRoute>
         }
       />
+
+      {/* Catch all route - redirect to admin dashboard */}
+      <Route path="*" element={<Navigate to="/admin" replace />} />
     </Routes>
   );
 }
