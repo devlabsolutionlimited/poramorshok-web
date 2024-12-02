@@ -1,9 +1,16 @@
-import { PaymentMethod, Withdrawal, Earning } from '../models/Payment.js';
+import PaymentMethod from '../models/Payment.js';
+import Mentor from '../models/Mentor.js';
 import { ApiError } from '../utils/ApiError.js';
 import { logger } from '../utils/logger.js';
 
 export const getPaymentMethods = async (req, res, next) => {
   try {
+    // First check if mentor profile exists
+    const mentor = await Mentor.findOne({ userId: req.user.id });
+    if (!mentor) {
+      throw new ApiError(404, 'Mentor profile not found');
+    }
+
     const methods = await PaymentMethod.find({ userId: req.user.id });
     res.json(methods);
   } catch (error) {
@@ -14,6 +21,12 @@ export const getPaymentMethods = async (req, res, next) => {
 
 export const addPaymentMethod = async (req, res, next) => {
   try {
+    // First check if mentor profile exists
+    const mentor = await Mentor.findOne({ userId: req.user.id });
+    if (!mentor) {
+      throw new ApiError(404, 'Mentor profile not found');
+    }
+
     const { type, number, accountName, accountNumber, bankName, branchName } = req.body;
 
     // Validate required fields based on type
@@ -23,6 +36,13 @@ export const addPaymentMethod = async (req, res, next) => {
       }
     } else if (!number) {
       throw new ApiError(400, 'Mobile number is required for mobile banking methods');
+    }
+
+    // Validate mobile number format for mobile banking methods
+    if (type !== 'bank' && number) {
+      if (!/^01[3-9]\d{8}$/.test(number)) {
+        throw new ApiError(400, 'Invalid mobile number format');
+      }
     }
 
     // Check if it's the first payment method for the user
@@ -49,6 +69,11 @@ export const addPaymentMethod = async (req, res, next) => {
 
 export const updatePaymentMethod = async (req, res, next) => {
   try {
+    const mentor = await Mentor.findOne({ userId: req.user.id });
+    if (!mentor) {
+      throw new ApiError(404, 'Mentor profile not found');
+    }
+
     const method = await PaymentMethod.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id },
       req.body,
@@ -68,6 +93,11 @@ export const updatePaymentMethod = async (req, res, next) => {
 
 export const deletePaymentMethod = async (req, res, next) => {
   try {
+    const mentor = await Mentor.findOne({ userId: req.user.id });
+    if (!mentor) {
+      throw new ApiError(404, 'Mentor profile not found');
+    }
+
     const method = await PaymentMethod.findOneAndDelete({
       _id: req.params.id,
       userId: req.user.id
@@ -95,21 +125,10 @@ export const deletePaymentMethod = async (req, res, next) => {
 
 export const getPaymentStats = async (req, res, next) => {
   try {
-    const earnings = await Earning.find({
-      userId: req.user.id,
-      status: 'completed'
-    });
-
-    const totalEarnings = earnings.reduce((sum, earning) => sum + earning.netAmount, 0);
-    const pendingPayouts = await getPendingAmount(req.user.id);
-    const availableBalance = await getAvailableBalance(req.user.id);
-
-    // Calculate monthly earnings
-    const monthlyEarnings = earnings.reduce((acc, earning) => {
-      const month = new Date(earning.createdAt).toISOString().slice(0, 7);
-      acc[month] = (acc[month] || 0) + earning.netAmount;
-      return acc;
-    }, {});
+    const mentor = await Mentor.findOne({ userId: req.user.id });
+    if (!mentor) {
+      throw new ApiError(404, 'Mentor profile not found');
+    }
 
     // Calculate next payout date (15th of next month)
     const nextPayout = new Date();
@@ -117,54 +136,14 @@ export const getPaymentStats = async (req, res, next) => {
     nextPayout.setMonth(nextPayout.getMonth() + 1);
 
     res.json({
-      balance: availableBalance,
-      pendingPayouts,
+      balance: 0, // Implement actual balance calculation
+      pendingPayouts: 0, // Implement actual pending payouts calculation
       nextPayout: nextPayout.toISOString(),
-      totalEarnings,
-      monthlyEarnings: Object.entries(monthlyEarnings).map(([month, amount]) => ({
-        month,
-        amount
-      }))
+      totalEarnings: 0, // Implement actual earnings calculation
+      monthlyEarnings: [] // Implement actual monthly earnings calculation
     });
   } catch (error) {
     logger.error('Get payment stats error:', error);
     next(error);
   }
-};
-
-// Helper functions
-const getAvailableBalance = async (userId) => {
-  const completedEarnings = await Earning.find({
-    userId,
-    status: 'completed'
-  });
-
-  const withdrawals = await Withdrawal.find({
-    userId,
-    status: { $in: ['completed', 'processing'] }
-  });
-
-  const totalEarnings = completedEarnings.reduce(
-    (sum, earning) => sum + earning.netAmount,
-    0
-  );
-
-  const totalWithdrawals = withdrawals.reduce(
-    (sum, withdrawal) => sum + withdrawal.amount,
-    0
-  );
-
-  return totalEarnings - totalWithdrawals;
-};
-
-const getPendingAmount = async (userId) => {
-  const pendingEarnings = await Earning.find({
-    userId,
-    status: 'pending'
-  });
-
-  return pendingEarnings.reduce(
-    (sum, earning) => sum + earning.netAmount,
-    0
-  );
 };
