@@ -17,16 +17,16 @@ export interface AnalyticsData {
 }
 
 export const getMentorAnalytics = async (): Promise<AnalyticsData> => {
-  const response = await api.get('/api/mentors/analytics');
+  const response = await api.get('/api/mentors/analytics'); // Updated endpoint
   return response.data;
 };
 
 export const getSessionStats = async () => {
-  const response = await api.get('/api/mentors/sessions/stats');
+  const response = await api.get('/api/mentors/sessions/stats'); // Updated endpoint
   return response.data;
 };
 
 export const getEarningsStats = async () => {
-  const response = await api.get('/api/mentors/earnings/stats');
+  const response = await api.get('/api/mentors/earnings/stats'); // Updated endpoint
   return response.data;
 };
