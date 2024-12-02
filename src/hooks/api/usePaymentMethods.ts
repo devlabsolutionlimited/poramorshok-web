@@ -6,6 +6,7 @@ import {
   deletePaymentMethod 
 } from '@/lib/api/payments';
 import { useToast } from '@/hooks/use-toast';
+import type { PaymentMethod } from '@/types/payment';
 
 export function usePaymentMethods() {
   const queryClient = useQueryClient();
@@ -18,8 +19,12 @@ export function usePaymentMethods() {
 
   const addMutation = useMutation({
     mutationFn: addPaymentMethod,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
+    onSuccess: (newMethod) => {
+      // Update cache optimistically
+      queryClient.setQueryData<PaymentMethod[]>(['payment-methods'], (old = []) => {
+        return [...old, newMethod];
+      });
+      
       toast({
         title: 'Success',
         description: 'Payment method added successfully',
@@ -35,9 +40,15 @@ export function usePaymentMethods() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => updatePaymentMethod(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
+    mutationFn: ({ id, data }: { id: string; data: Partial<PaymentMethod> }) => 
+      updatePaymentMethod(id, data),
+    onSuccess: (updatedMethod) => {
+      queryClient.setQueryData<PaymentMethod[]>(['payment-methods'], (old = []) => {
+        return old.map(method => 
+          method.id === updatedMethod.id ? updatedMethod : method
+        );
+      });
+      
       toast({
         title: 'Success',
         description: 'Payment method updated successfully',
@@ -54,8 +65,11 @@ export function usePaymentMethods() {
 
   const deleteMutation = useMutation({
     mutationFn: deletePaymentMethod,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueryData<PaymentMethod[]>(['payment-methods'], (old = []) => {
+        return old.filter(method => method.id !== deletedId);
+      });
+      
       toast({
         title: 'Success',
         description: 'Payment method deleted successfully',
