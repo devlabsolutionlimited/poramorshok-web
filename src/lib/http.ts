@@ -49,6 +49,8 @@ http.interceptors.response.use(
 
     if (status === 401) {
       localStorage.removeItem('token');
+      delete http.defaults.headers.common['Authorization'];
+      window.location.href = '/login';
       throw new AuthenticationError(
         (data && data.message) || 'Authentication failed. Please log in again.'
       );
