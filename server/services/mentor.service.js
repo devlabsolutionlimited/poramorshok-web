@@ -1,17 +1,17 @@
-import Mentor from '../models/Mentor.js';
+import MentorProfile from '../models/MentorProfile.js';
 import Session from '../models/Session.js';
 import { ApiError } from '../utils/ApiError.js';
 import { logger } from '../utils/logger.js';
 
 export class MentorService {
-  static async getDashboardStats(mentorId) {
+  static async getDashboardStats(userId) {
     try {
-      const mentor = await Mentor.findOne({ userId: mentorId });
+      const mentor = await MentorProfile.findOne({ userId });
       if (!mentor) {
         throw new ApiError(404, 'Mentor profile not found');
       }
 
-      const sessions = await Session.find({ mentorId });
+      const sessions = await Session.find({ mentorId: userId });
       const completedSessions = sessions.filter(s => s.status === 'completed');
       const upcomingSessions = sessions.filter(s => s.status === 'upcoming');
 
@@ -30,8 +30,8 @@ export class MentorService {
         upcomingSessions: upcomingSessions.length,
         totalEarnings,
         averageRating: Number(averageRating.toFixed(1)),
-        recentSessions: await this.getRecentSessions(mentorId),
-        popularTopics: await this.getPopularTopics(mentorId)
+        recentSessions: await this.getRecentSessions(userId),
+        popularTopics: await this.getPopularTopics(userId)
       };
     } catch (error) {
       logger.error('Get dashboard stats error:', error);
@@ -39,9 +39,9 @@ export class MentorService {
     }
   }
 
-  static async getAnalytics(mentorId) {
+  static async getAnalytics(userId) {
     try {
-      const sessions = await Session.find({ mentorId });
+      const sessions = await Session.find({ mentorId: userId });
       const now = new Date();
       const lastMonth = new Date(now.setMonth(now.getMonth() - 1));
 
@@ -63,8 +63,8 @@ export class MentorService {
           date,
           ...stats
         })),
-        topicStats: await this.getTopicStats(mentorId),
-        completionRate: await this.getCompletionRate(mentorId)
+        topicStats: await this.getTopicStats(userId),
+        completionRate: await this.getCompletionRate(userId)
       };
     } catch (error) {
       logger.error('Get analytics error:', error);
@@ -72,10 +72,10 @@ export class MentorService {
     }
   }
 
-  static async updateAvailability(mentorId, availability) {
+  static async updateAvailability(userId, availability) {
     try {
-      const mentor = await Mentor.findOneAndUpdate(
-        { userId: mentorId },
+      const mentor = await MentorProfile.findOneAndUpdate(
+        { userId },
         { availability },
         { new: true }
       );
@@ -91,9 +91,9 @@ export class MentorService {
     }
   }
 
-  static async getSessions(mentorId, filters = {}) {
+  static async getSessions(userId, filters = {}) {
     try {
-      let query = { mentorId };
+      let query = { mentorId: userId };
 
       if (filters.status) {
         query.status = filters.status;
@@ -114,80 +114,16 @@ export class MentorService {
     }
   }
 
-  static async createSessionType(mentorId, data) {
-    try {
-      const mentor = await Mentor.findOne({ userId: mentorId });
-      if (!mentor) {
-        throw new ApiError(404, 'Mentor profile not found');
-      }
-
-      mentor.sessionTypes = mentor.sessionTypes || [];
-      mentor.sessionTypes.push({
-        ...data,
-        id: new mongoose.Types.ObjectId()
-      });
-
-      await mentor.save();
-      return mentor.sessionTypes[mentor.sessionTypes.length - 1];
-    } catch (error) {
-      logger.error('Create session type error:', error);
-      throw error;
-    }
-  }
-
-  static async updateSessionType(mentorId, typeId, data) {
-    try {
-      const mentor = await Mentor.findOne({ userId: mentorId });
-      if (!mentor) {
-        throw new ApiError(404, 'Mentor profile not found');
-      }
-
-      const typeIndex = mentor.sessionTypes.findIndex(t => t.id.toString() === typeId);
-      if (typeIndex === -1) {
-        throw new ApiError(404, 'Session type not found');
-      }
-
-      mentor.sessionTypes[typeIndex] = {
-        ...mentor.sessionTypes[typeIndex],
-        ...data
-      };
-
-      await mentor.save();
-      return mentor.sessionTypes[typeIndex];
-    } catch (error) {
-      logger.error('Update session type error:', error);
-      throw error;
-    }
-  }
-
-  static async deleteSessionType(mentorId, typeId) {
-    try {
-      const mentor = await Mentor.findOne({ userId: mentorId });
-      if (!mentor) {
-        throw new ApiError(404, 'Mentor profile not found');
-      }
-
-      mentor.sessionTypes = mentor.sessionTypes.filter(
-        t => t.id.toString() !== typeId
-      );
-
-      await mentor.save();
-    } catch (error) {
-      logger.error('Delete session type error:', error);
-      throw error;
-    }
-  }
-
   // Helper methods
-  static async getRecentSessions(mentorId) {
-    return Session.find({ mentorId })
+  static async getRecentSessions(userId) {
+    return Session.find({ mentorId: userId })
       .populate('studentId', 'name avatar')
       .sort({ date: -1 })
       .limit(5);
   }
 
-  static async getPopularTopics(mentorId) {
-    const sessions = await Session.find({ mentorId, status: 'completed' });
+  static async getPopularTopics(userId) {
+    const sessions = await Session.find({ mentorId: userId, status: 'completed' });
     const topicCounts = sessions.reduce((acc, session) => {
       acc[session.topic] = (acc[session.topic] || 0) + 1;
       return acc;
@@ -199,8 +135,8 @@ export class MentorService {
       .slice(0, 5);
   }
 
-  static async getTopicStats(mentorId) {
-    const sessions = await Session.find({ mentorId, status: 'completed' });
+  static async getTopicStats(userId) {
+    const sessions = await Session.find({ mentorId: userId, status: 'completed' });
     return sessions.reduce((acc, session) => {
       if (!acc[session.topic]) {
         acc[session.topic] = {
@@ -221,8 +157,8 @@ export class MentorService {
     }, {});
   }
 
-  static async getCompletionRate(mentorId) {
-    const sessions = await Session.find({ mentorId });
+  static async getCompletionRate(userId) {
+    const sessions = await Session.find({ mentorId: userId });
     const completed = sessions.filter(s => s.status === 'completed').length;
     return sessions.length ? (completed / sessions.length) * 100 : 0;
   }
