@@ -7,19 +7,31 @@ const mentorProfileSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  title: String,
-  company: String,
+  title: {
+    type: String,
+    default: ''
+  },
+  company: {
+    type: String,
+    default: ''
+  },
   expertise: [{
     type: String
   }],
-  experience: Number,
+  experience: {
+    type: Number,
+    default: 0
+  },
   education: [{
     degree: String,
     institution: String,
     year: Number,
     description: String
   }],
-  about: String,
+  about: {
+    type: String,
+    default: ''
+  },
   hourlyRate: {
     type: Number,
     required: true,
@@ -44,9 +56,19 @@ const mentorProfileSchema = new mongoose.Schema({
     type: String,
     unique: true,
     sparse: true
+  },
+  totalEarnings: {
+    type: Number,
+    default: 0
+  },
+  availableBalance: {
+    type: Number,
+    default: 0
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 // Create mentor profile when a user with role 'mentor' is created
@@ -55,10 +77,21 @@ mentorProfileSchema.statics.createDefaultProfile = async function(userId) {
     userId,
     hourlyRate: 0,
     expertise: [],
-    languages: ['Bengali', 'English']
+    languages: ['Bengali', 'English'],
+    title: 'Mentor',
+    about: 'Welcome to my profile! I am here to help you learn and grow.',
+    totalEarnings: 0,
+    availableBalance: 0
   });
   return profile;
 };
+
+// Virtual populate for payment methods
+mentorProfileSchema.virtual('paymentMethods', {
+  ref: 'PaymentMethod',
+  localField: 'userId',
+  foreignField: 'userId'
+});
 
 const MentorProfile = mongoose.model('MentorProfile', mentorProfileSchema);
 export default MentorProfile;
