@@ -1,66 +1,42 @@
 import StudentProfile from '../models/StudentProfile.js';
+import User from '../models/User.js';
 import { ApiError } from '../utils/ApiError.js';
 import { logger } from '../utils/logger.js';
+import fs from 'fs/promises';
+import path from 'path';
 
-export const getProfile = async (req, res, next) => {
+export const updateAvatar = async (req, res, next) => {
   try {
-    const profile = await StudentProfile.findOne({ userId: req.user._id });
-    if (!profile) {
-      throw new ApiError(404, 'Student profile not found');
+    if (!req.file) {
+      throw new ApiError(400, 'No file uploaded');
     }
-    res.json(profile);
-  } catch (error) {
-    logger.error('Get student profile error:', error);
-    next(error);
-  }
-};
 
-export const updateProfile = async (req, res, next) => {
-  try {
-    const allowedFields = [
-      'bio', 'interests', 'learningGoals', 'preferredLanguages',
-      'education', 'socialLinks', 'notificationPreferences'
-    ];
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
 
-    const updateData = {};
-    allowedFields.forEach(field => {
-      if (req.body[field] !== undefined) {
-        updateData[field] = req.body[field];
+    // Delete old avatar if exists
+    if (user.avatar) {
+      const oldAvatarPath = path.join('uploads/avatars', path.basename(user.avatar));
+      try {
+        await fs.unlink(oldAvatarPath);
+      } catch (error) {
+        logger.error('Error deleting old avatar:', error);
       }
+    }
+
+    // Update user avatar
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    user.avatar = avatarUrl;
+    await user.save();
+
+    res.json({ 
+      message: 'Avatar updated successfully',
+      avatar: avatarUrl
     });
-
-    const profile = await StudentProfile.findOneAndUpdate(
-      { userId: req.user._id },
-      updateData,
-      { new: true, runValidators: true }
-    );
-
-    if (!profile) {
-      throw new ApiError(404, 'Student profile not found');
-    }
-
-    res.json(profile);
   } catch (error) {
-    logger.error('Update student profile error:', error);
-    next(error);
-  }
-};
-
-export const updateNotificationPreferences = async (req, res, next) => {
-  try {
-    const profile = await StudentProfile.findOneAndUpdate(
-      { userId: req.user._id },
-      { notificationPreferences: req.body },
-      { new: true, runValidators: true }
-    );
-
-    if (!profile) {
-      throw new ApiError(404, 'Student profile not found');
-    }
-
-    res.json(profile.notificationPreferences);
-  } catch (error) {
-    logger.error('Update notification preferences error:', error);
+    logger.error('Update avatar error:', error);
     next(error);
   }
 };
