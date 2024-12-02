@@ -2,13 +2,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   getMentorSessions, 
   getSessionStats,
-  createSessionType,
-  updateSessionType,
-  deleteSessionType,
-  getSessionTypes,
   updateSessionStatus,
   addSessionFeedback
 } from '@/lib/api/sessions';
+import {
+  getSessionTypes,
+  createSessionType,
+  updateSessionType,
+  deleteSessionType
+} from '@/lib/api/session-types';
 import { useToast } from '@/hooks/use-toast';
 import type { SessionType } from '@/types/session';
 
@@ -19,7 +21,7 @@ export function useMentorSessions() {
   const sessionsQuery = useQuery({
     queryKey: ['mentor-sessions'],
     queryFn: getMentorSessions,
-    staleTime: 0, // Always fetch fresh data
+    staleTime: 0,
     retry: 3,
     retryDelay: 1000
   });
@@ -27,17 +29,15 @@ export function useMentorSessions() {
   const statsQuery = useQuery({
     queryKey: ['session-stats'],
     queryFn: getSessionStats,
-    staleTime: 0, // Always fetch fresh data
+    staleTime: 0,
     retry: 3,
     retryDelay: 1000
   });
 
   const sessionTypesQuery = useQuery({
     queryKey: ['session-types'],
-    queryFn: getSessionTypes,
-    staleTime: 0, // Always fetch fresh data
-    retry: 3,
-    retryDelay: 1000
+    queryFn: () => getSessionTypes(queryClient.getQueryData(['user'])?.id),
+    enabled: !!queryClient.getQueryData(['user'])?.id
   });
 
   const createSessionTypeMutation = useMutation({
@@ -50,7 +50,6 @@ export function useMentorSessions() {
       });
     },
     onError: (error: Error) => {
-      console.error('Create session type error:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to create session type',
