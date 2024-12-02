@@ -1,16 +1,13 @@
 import express from 'express';
+import { body } from 'express-validator';
 import { protect, authorize } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
-import { body } from 'express-validator';
 import {
   getPaymentMethods,
   addPaymentMethod,
   updatePaymentMethod,
   deletePaymentMethod,
-  requestWithdrawal,
-  getWithdrawals,
-  getPaymentStats,
-  getTransactions
+  getPaymentStats
 } from '../controllers/mentor.payment.controller.js';
 
 const router = express.Router();
@@ -59,21 +56,5 @@ router.put(
 );
 
 router.delete('/methods/:id', deletePaymentMethod);
-
-// Transactions
-router.get('/transactions', getTransactions);
-
-// Withdrawals
-router.post(
-  '/withdraw',
-  [
-    body('amount').isInt({ min: 1000 }).withMessage('Minimum withdrawal amount is ৳1,000'),
-    body('paymentMethodId').isMongoId().withMessage('Invalid payment method'),
-    validate
-  ],
-  requestWithdrawal
-);
-
-router.get('/withdrawals', getWithdrawals);
 
 export default router;
