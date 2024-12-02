@@ -9,7 +9,7 @@ const api = axios.create({
     'Content-Type': 'application/json'
   },
   withCredentials: true,
-  timeout: 10000 // 10 second timeout
+  timeout: 30000 // 30 second timeout
 });
 
 // Request interceptor
@@ -29,7 +29,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (!error.response) {
-      throw new NetworkError('Network error occurred. Please check your connection.');
+      // Network error
+      console.error('Network Error:', error);
+      throw new NetworkError(
+        'Unable to connect to the server. Please check your internet connection and try again.'
+      );
     }
 
     const { status, data } = error.response;
@@ -39,7 +43,25 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       api.defaults.headers['Authorization'] = '';
       window.location.href = '/login';
-      throw new AuthenticationError(data?.message || 'Authentication failed');
+      throw new AuthenticationError('Your session has expired. Please log in again.');
+    }
+
+    if (status === 400) {
+      // Validation error
+      const message = data?.message || 'Invalid input data';
+      const errors = data?.errors || {};
+      throw new ApiError(status, message, errors);
+    }
+
+    if (status === 404) {
+      throw new ApiError(status, 'The requested resource was not found');
+    }
+
+    if (status === 500) {
+      throw new ApiError(
+        status,
+        'An unexpected error occurred on the server. Please try again later.'
+      );
     }
 
     throw new ApiError(

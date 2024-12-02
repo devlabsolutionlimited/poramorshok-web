@@ -73,18 +73,26 @@ export const configureExpress = () => {
   // API Routes
   app.use('/api/auth', authRoutes);
   app.use('/api/admin/auth', adminAuthRoutes);
-  app.use('/api/mentors', mentorRoutes);
+  
+  // Mentor routes
+  app.use('/api/mentors/search', mentorRoutes); // For public mentor search/listing
   app.use('/api/mentor/payments', mentorPaymentRoutes);
   app.use('/api/mentor/profile', mentorProfileRoutes);
-  app.use('/api/mentor', mentorSessionRoutes);
-  app.use('/api/mentors', mentorAnalyticsRoutes);
+  app.use('/api/mentor/sessions', mentorSessionRoutes);
+  app.use('/api/mentor/analytics', mentorAnalyticsRoutes);
   app.use('/api/mentor/availability', mentorAvailabilityRoutes);
+  
+  // Session routes
   app.use('/api/session-types', sessionTypeRoutes);
   app.use('/api/sessions', sessionRoutes);
+  
+  // Other routes
   app.use('/api/messages', messageRoutes);
   app.use('/api/payments', paymentRoutes);
-  app.use('/api/student', studentDashboardRoutes);
-  app.use('/api/student', studentProfileRoutes);
+  
+  // Student routes
+  app.use('/api/student/dashboard', studentDashboardRoutes);
+  app.use('/api/student/profile', studentProfileRoutes);
   app.use('/api/student/payments', studentPaymentRoutes);
 
   // Error handling

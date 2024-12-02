@@ -1,26 +1,49 @@
 import MentorProfile from '../models/MentorProfile.js';
 import PaymentMethod from '../models/Payment.js';
+import Transaction from '../models/Transaction.js';
 import { ApiError } from '../utils/ApiError.js';
 import { logger } from '../utils/logger.js';
 
 export const getPaymentStats = async (req, res, next) => {
   try {
-    const profile = await MentorProfile.findOne({ userId: req.user._id });
-    if (!profile) {
-      throw new ApiError(404, 'Mentor profile not found');
-    }
+    // Get all completed transactions
+    const completedTransactions = await Transaction.find({
+      mentorId: req.user._id,
+      status: 'completed'
+    });
 
-    // Calculate next payout date (15th of next month)
-    const nextPayout = new Date();
-    nextPayout.setDate(15);
-    nextPayout.setMonth(nextPayout.getMonth() + 1);
+    // Calculate total earnings
+    const totalEarnings = completedTransactions.reduce(
+      (sum, transaction) => sum + transaction.amount,
+      0
+    );
+
+    // Get pending transactions
+    const pendingTransactions = await Transaction.find({
+      mentorId: req.user._id,
+      status: 'pending'
+    });
+
+    // Calculate pending payouts
+    const pendingPayouts = pendingTransactions.reduce(
+      (sum, transaction) => sum + transaction.amount,
+      0
+    );
+
+    // Count completed sessions (unique sessionIds from completed transactions)
+    const completedSessions = new Set(
+      completedTransactions.map(t => t.sessionId.toString())
+    ).size;
 
     res.json({
-      balance: profile.availableBalance || 0,
-      pendingPayouts: 0,
-      nextPayout: nextPayout.toISOString(),
-      totalEarnings: profile.totalEarnings || 0,
-      monthlyEarnings: [] // Implement actual monthly earnings calculation
+      totalEarnings,
+      pendingPayouts,
+      completedSessions,
+      nextPayout: new Date(
+        new Date().getFullYear(),
+        new Date().getMonth() + 1,
+        15
+      ).toISOString()
     });
   } catch (error) {
     logger.error('Get payment stats error:', error);
@@ -45,16 +68,25 @@ export const addPaymentMethod = async (req, res, next) => {
     // Validate required fields based on type
     if (type === 'bank') {
       if (!accountName || !accountNumber || !bankName || !branchName) {
-        throw new ApiError(400, 'All bank account details are required');
+        throw new ApiError(400, 'All bank account details are required', {
+          accountName: !accountName ? 'Account name is required' : null,
+          accountNumber: !accountNumber ? 'Account number is required' : null,
+          bankName: !bankName ? 'Bank name is required' : null,
+          branchName: !branchName ? 'Branch name is required' : null
+        });
       }
     } else if (!number) {
-      throw new ApiError(400, 'Mobile number is required for mobile banking methods');
+      throw new ApiError(400, 'Mobile number is required for mobile banking methods', {
+        number: 'Mobile number is required'
+      });
     }
 
     // Validate mobile number format for mobile banking methods
     if (type !== 'bank' && number) {
       if (!/^01[3-9]\d{8}$/.test(number)) {
-        throw new ApiError(400, 'Invalid mobile number format');
+        throw new ApiError(400, 'Invalid mobile number format', {
+          number: 'Mobile number must start with 01 and be 11 digits long'
+        });
       }
     }
 
@@ -62,7 +94,8 @@ export const addPaymentMethod = async (req, res, next) => {
     const existingMethods = await PaymentMethod.countDocuments({ userId: req.user._id });
     const isDefault = existingMethods === 0;
 
-    const method = await PaymentMethod.create({
+    // Create the payment method
+    const method = new PaymentMethod({
       userId: req.user._id,
       type,
       number,
@@ -73,7 +106,22 @@ export const addPaymentMethod = async (req, res, next) => {
       isDefault
     });
 
-    res.status(201).json(method);
+    // Save with error handling
+    try {
+      await method.save();
+      logger.info(`Payment method created for user ${req.user._id}`);
+      res.status(201).json(method);
+    } catch (dbError) {
+      logger.error('Database error while saving payment method:', dbError);
+      if (dbError.name === 'ValidationError') {
+        throw new ApiError(400, 'Invalid payment method data', 
+          Object.fromEntries(
+            Object.entries(dbError.errors).map(([key, value]) => [key, value.message])
+          )
+        );
+      }
+      throw new ApiError(500, 'Failed to save payment method');
+    }
   } catch (error) {
     logger.error('Add payment method error:', error);
     next(error);
@@ -128,24 +176,25 @@ export const deletePaymentMethod = async (req, res, next) => {
 
 export const getTransactions = async (req, res, next) => {
   try {
-    const profile = await MentorProfile.findOne({ userId: req.user._id });
-    if (!profile) {
-      throw new ApiError(404, 'Mentor profile not found');
-    }
+    const transactions = await Transaction.find({ mentorId: req.user._id })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .populate('studentId', 'name')
+      .populate('sessionId', 'title');
 
-    // Mock transactions for now
-    const transactions = [
-      {
-        id: '1',
-        type: 'earning',
-        amount: 2000,
-        date: new Date(),
-        status: 'completed',
-        description: 'Session payment received'
-      }
-    ];
+    // Format the response
+    const formattedTransactions = transactions.map(transaction => ({
+      id: transaction._id,
+      amount: transaction.amount,
+      status: transaction.status,
+      createdAt: transaction.createdAt,
+      sessionId: transaction.sessionId?._id,
+      sessionTitle: transaction.sessionId?.title,
+      studentName: transaction.studentId?.name,
+      paymentMethod: transaction.paymentMethod
+    }));
 
-    res.json(transactions);
+    res.json(formattedTransactions);
   } catch (error) {
     logger.error('Get transactions error:', error);
     next(error);
