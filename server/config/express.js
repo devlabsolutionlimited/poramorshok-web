@@ -15,6 +15,7 @@ import sessionTypeRoutes from '../routes/session.type.routes.js';
 import sessionRoutes from '../routes/session.routes.js';
 import messageRoutes from '../routes/message.routes.js';
 import paymentRoutes from '../routes/payment.routes.js';
+import studentDashboardRoutes from '../routes/student.dashboard.routes.js';
 
 export const configureExpress = () => {
   const app = express();
@@ -71,13 +72,14 @@ export const configureExpress = () => {
   app.use('/api/mentors', mentorRoutes);
   app.use('/api/mentor/payments', mentorPaymentRoutes);
   app.use('/api/mentor/profile', mentorProfileRoutes);
-  app.use('/api/mentor', mentorSessionRoutes); // Updated path
+  app.use('/api/mentor', mentorSessionRoutes);
   app.use('/api/mentors', mentorAnalyticsRoutes);
   app.use('/api/mentor/availability', mentorAvailabilityRoutes);
   app.use('/api/session-types', sessionTypeRoutes);
   app.use('/api/sessions', sessionRoutes);
   app.use('/api/messages', messageRoutes);
   app.use('/api/payments', paymentRoutes);
+  app.use('/api/student', studentDashboardRoutes);
 
   // Error handling
   app.use(errorHandler);
