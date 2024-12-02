@@ -122,38 +122,5 @@ const mentorSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Index for searching
-mentorSchema.index({
-  title: 'text',
-  company: 'text',
-  expertise: 'text'
-});
-
-// Calculate rating when feedback is added
-mentorSchema.methods.updateRating = async function(rating) {
-  this.totalReviews += 1;
-  this.rating = ((this.rating * (this.totalReviews - 1)) + rating) / this.totalReviews;
-  await this.save();
-};
-
-// Virtual for total earnings
-mentorSchema.virtual('totalEarnings', {
-  ref: 'Earning',
-  localField: 'userId',
-  foreignField: 'userId',
-  match: { status: 'completed' },
-  get: function(earnings) {
-    return earnings?.reduce((sum, earning) => sum + earning.netAmount, 0) || 0;
-  }
-});
-
-// Virtual for total sessions
-mentorSchema.virtual('totalSessions', {
-  ref: 'Session',
-  localField: 'userId',
-  foreignField: 'mentorId',
-  count: true
-});
-
 const Mentor = mongoose.model('Mentor', mentorSchema);
 export default Mentor;
