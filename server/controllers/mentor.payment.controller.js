@@ -1,16 +1,10 @@
 import PaymentMethod from '../models/Payment.js';
-import Mentor from '../models/Mentor.js';
+import MentorProfile from '../models/MentorProfile.js';
 import { ApiError } from '../utils/ApiError.js';
 import { logger } from '../utils/logger.js';
 
 export const getPaymentMethods = async (req, res, next) => {
   try {
-    // First check if mentor profile exists
-    const mentor = await Mentor.findOne({ userId: req.user._id });
-    if (!mentor) {
-      throw new ApiError(404, 'Mentor profile not found');
-    }
-
     const methods = await PaymentMethod.find({ userId: req.user._id });
     res.json(methods);
   } catch (error) {
@@ -21,12 +15,6 @@ export const getPaymentMethods = async (req, res, next) => {
 
 export const addPaymentMethod = async (req, res, next) => {
   try {
-    // First check if mentor profile exists
-    const mentor = await Mentor.findOne({ userId: req.user._id });
-    if (!mentor) {
-      throw new ApiError(404, 'Mentor profile not found');
-    }
-
     const { type, number, accountName, accountNumber, bankName, branchName } = req.body;
 
     // Validate required fields based on type
@@ -69,11 +57,6 @@ export const addPaymentMethod = async (req, res, next) => {
 
 export const updatePaymentMethod = async (req, res, next) => {
   try {
-    const mentor = await Mentor.findOne({ userId: req.user._id });
-    if (!mentor) {
-      throw new ApiError(404, 'Mentor profile not found');
-    }
-
     const method = await PaymentMethod.findOneAndUpdate(
       { _id: req.params.id, userId: req.user._id },
       req.body,
@@ -93,11 +76,6 @@ export const updatePaymentMethod = async (req, res, next) => {
 
 export const deletePaymentMethod = async (req, res, next) => {
   try {
-    const mentor = await Mentor.findOne({ userId: req.user._id });
-    if (!mentor) {
-      throw new ApiError(404, 'Mentor profile not found');
-    }
-
     const method = await PaymentMethod.findOneAndDelete({
       _id: req.params.id,
       userId: req.user._id
@@ -125,25 +103,23 @@ export const deletePaymentMethod = async (req, res, next) => {
 
 export const getPaymentStats = async (req, res, next) => {
   try {
-    const mentor = await Mentor.findOne({ userId: req.user._id })
-      .populate('totalEarnings')
-      .populate('totalSessions');
-
-    if (!mentor) {
-      throw new ApiError(404, 'Mentor profile not found');
-    }
-
     // Calculate next payout date (15th of next month)
     const nextPayout = new Date();
     nextPayout.setDate(15);
     nextPayout.setMonth(nextPayout.getMonth() + 1);
 
+    // Get total earnings (implement actual calculation based on your business logic)
+    const totalEarnings = 0; // Replace with actual calculation
+
+    // Get monthly earnings (implement actual calculation)
+    const monthlyEarnings = []; // Replace with actual calculation
+
     res.json({
-      balance: mentor.totalEarnings || 0,
-      pendingPayouts: 0, // Implement actual pending payouts calculation
+      balance: totalEarnings,
+      pendingPayouts: 0,
       nextPayout: nextPayout.toISOString(),
-      totalEarnings: mentor.totalEarnings || 0,
-      monthlyEarnings: [] // Implement actual monthly earnings calculation
+      totalEarnings,
+      monthlyEarnings
     });
   } catch (error) {
     logger.error('Get payment stats error:', error);
