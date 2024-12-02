@@ -12,7 +12,16 @@ const paymentMethodSchema = new mongoose.Schema({
     required: true
   },
   // For mobile banking
-  number: String,
+  number: {
+    type: String,
+    validate: {
+      validator: function(v) {
+        if (this.type === 'bank') return true;
+        return /^01[3-9]\d{8}$/.test(v);
+      },
+      message: 'Invalid mobile number format'
+    }
+  },
   // For bank accounts
   accountName: String,
   accountNumber: String,
@@ -24,6 +33,29 @@ const paymentMethodSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true
+});
+
+// Ensure required fields based on type
+paymentMethodSchema.pre('save', function(next) {
+  if (this.type === 'bank') {
+    if (!this.accountName || !this.accountNumber || !this.bankName || !this.branchName) {
+      next(new Error('Bank account details are required'));
+    }
+  } else if (!this.number) {
+    next(new Error('Mobile number is required for mobile banking methods'));
+  }
+  next();
+});
+
+// Ensure only one default payment method per user
+paymentMethodSchema.pre('save', async function(next) {
+  if (this.isDefault) {
+    await this.constructor.updateMany(
+      { userId: this.userId, _id: { $ne: this._id } },
+      { $set: { isDefault: false } }
+    );
+  }
+  next();
 });
 
 const withdrawalSchema = new mongoose.Schema({
