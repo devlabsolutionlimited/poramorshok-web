@@ -1,43 +1,36 @@
-import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageLoader } from '@/components/ui/page-loader';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format } from 'date-fns';
-
-// Mock analytics data
-const fetchAnalytics = async () => {
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  return {
-    totalEarnings: 45000,
-    totalSessions: 24,
-    averageRating: 4.8,
-    completionRate: 95,
-    sessionsByDay: [
-      { date: '2024-03-20', sessions: 3 },
-      { date: '2024-03-21', sessions: 2 },
-      { date: '2024-03-22', sessions: 4 },
-      { date: '2024-03-23', sessions: 1 },
-      { date: '2024-03-24', sessions: 3 },
-      { date: '2024-03-25', sessions: 2 },
-      { date: '2024-03-26', sessions: 5 }
-    ],
-    topTopics: [
-      { topic: 'Web Development', sessions: 10 },
-      { topic: 'React', sessions: 8 },
-      { topic: 'System Design', sessions: 6 }
-    ]
-  };
-};
+import { useMentorAnalytics } from '@/hooks/api/useMentorAnalytics';
 
 export default function Analytics() {
-  const { data: analytics, isLoading } = useQuery({
-    queryKey: ['mentor-analytics'],
-    queryFn: fetchAnalytics
-  });
+  const { data: analytics, isLoading, error } = useMentorAnalytics();
 
   if (isLoading) {
     return <PageLoader />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-red-500">Error Loading Analytics</h2>
+        <p className="text-muted-foreground">
+          {error instanceof Error ? error.message : 'Failed to load analytics data'}
+        </p>
+      </div>
+    );
+  }
+
+  if (!analytics) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold">No Analytics Data</h2>
+        <p className="text-muted-foreground">
+          Start mentoring to see your analytics here
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -50,7 +43,7 @@ export default function Analytics() {
             <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">৳{analytics?.totalEarnings}</div>
+            <div className="text-2xl font-bold">৳{analytics.totalEarnings}</div>
           </CardContent>
         </Card>
 
@@ -59,7 +52,7 @@ export default function Analytics() {
             <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics?.totalSessions}</div>
+            <div className="text-2xl font-bold">{analytics.totalSessions}</div>
           </CardContent>
         </Card>
 
@@ -68,7 +61,7 @@ export default function Analytics() {
             <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics?.averageRating}</div>
+            <div className="text-2xl font-bold">{analytics.averageRating}</div>
           </CardContent>
         </Card>
 
@@ -77,7 +70,7 @@ export default function Analytics() {
             <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics?.completionRate}%</div>
+            <div className="text-2xl font-bold">{analytics.completionRate}%</div>
           </CardContent>
         </Card>
       </div>
@@ -89,7 +82,7 @@ export default function Analytics() {
         <CardContent>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analytics?.sessionsByDay}>
+              <BarChart data={analytics.sessionsByDay}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="date" 
@@ -112,7 +105,7 @@ export default function Analytics() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {analytics?.topTopics.map((topic) => (
+            {analytics.topTopics.map((topic) => (
               <div key={topic.topic} className="flex items-center">
                 <div className="flex-1">
                   <div className="text-sm font-medium">{topic.topic}</div>
