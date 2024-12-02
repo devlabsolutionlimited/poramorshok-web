@@ -69,7 +69,7 @@ export const configureExpress = () => {
   app.use('/api/mentors', mentorRoutes);
   app.use('/api/mentor/payments', mentorPaymentRoutes);
   app.use('/api/mentor/profile', mentorProfileRoutes);
-  app.use('/api/mentor', mentorAnalyticsRoutes);
+  app.use('/api/mentors', mentorAnalyticsRoutes); // Changed from /api/mentor to /api/mentors
   app.use('/api/session-types', sessionTypeRoutes);
   app.use('/api/sessions', sessionRoutes);
   app.use('/api/messages', messageRoutes);
