@@ -1,7 +1,7 @@
 import Admin from '../models/Admin.js';
 import { ApiError } from '../utils/ApiError.js';
-import { generateToken } from '../utils/jwt.js';
 import { logger } from '../utils/logger.js';
+import jwt from 'jsonwebtoken';
 
 export const login = async (req, res, next) => {
   try {
@@ -25,8 +25,12 @@ export const login = async (req, res, next) => {
     admin.lastLogin = new Date();
     await admin.save();
 
-    // Generate token
-    const token = generateToken({ id: admin._id, role: 'admin' });
+    // Generate token with admin flag
+    const token = jwt.sign(
+      { id: admin._id, isAdmin: true },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
 
     res.json({
       admin: {
@@ -44,7 +48,15 @@ export const login = async (req, res, next) => {
   }
 };
 
-export const getMe = async (req, res) => {
-  const admin = await Admin.findById(req.user.id).select('-password');
-  res.json(admin);
+export const getMe = async (req, res, next) => {
+  try {
+    const admin = await Admin.findById(req.user._id).select('-password');
+    if (!admin) {
+      throw new ApiError(404, 'Admin not found');
+    }
+    res.json(admin);
+  } catch (error) {
+    logger.error('Get admin profile error:', error);
+    next(error);
+  }
 };
