@@ -3,6 +3,31 @@ import MentorProfile from '../models/MentorProfile.js';
 import { ApiError } from '../utils/ApiError.js';
 import { logger } from '../utils/logger.js';
 
+export const getPaymentStats = async (req, res, next) => {
+  try {
+    const profile = await MentorProfile.findOne({ userId: req.user._id });
+    if (!profile) {
+      throw new ApiError(404, 'Mentor profile not found');
+    }
+
+    // Calculate next payout date (15th of next month)
+    const nextPayout = new Date();
+    nextPayout.setDate(15);
+    nextPayout.setMonth(nextPayout.getMonth() + 1);
+
+    res.json({
+      balance: profile.availableBalance || 0,
+      pendingPayouts: 0,
+      nextPayout: nextPayout.toISOString(),
+      totalEarnings: profile.totalEarnings || 0,
+      monthlyEarnings: [] // Implement actual monthly earnings calculation
+    });
+  } catch (error) {
+    logger.error('Get payment stats error:', error);
+    next(error);
+  }
+};
+
 export const getPaymentMethods = async (req, res, next) => {
   try {
     const methods = await PaymentMethod.find({ userId: req.user._id });
@@ -97,32 +122,6 @@ export const deletePaymentMethod = async (req, res, next) => {
     res.status(204).send();
   } catch (error) {
     logger.error('Delete payment method error:', error);
-    next(error);
-  }
-};
-
-export const getPaymentStats = async (req, res, next) => {
-  try {
-    // Calculate next payout date (15th of next month)
-    const nextPayout = new Date();
-    nextPayout.setDate(15);
-    nextPayout.setMonth(nextPayout.getMonth() + 1);
-
-    // Get total earnings (implement actual calculation based on your business logic)
-    const totalEarnings = 0; // Replace with actual calculation
-
-    // Get monthly earnings (implement actual calculation)
-    const monthlyEarnings = []; // Replace with actual calculation
-
-    res.json({
-      balance: totalEarnings,
-      pendingPayouts: 0,
-      nextPayout: nextPayout.toISOString(),
-      totalEarnings,
-      monthlyEarnings
-    });
-  } catch (error) {
-    logger.error('Get payment stats error:', error);
     next(error);
   }
 };
