@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
 interface StatusModalProps {
   isOpen: boolean;
@@ -28,7 +28,7 @@ export function StatusModal({ isOpen, onClose, status, message }: StatusModalPro
       color: 'text-green-500'
     },
     error: {
-      icon: AlertCircle,
+      icon: XCircle,
       title: 'Error',
       color: 'text-red-500'
     }
