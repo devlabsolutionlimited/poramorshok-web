@@ -30,7 +30,8 @@ const createDefaultAdmin = async () => {
         'manage_content',
         'view_analytics',
         'manage_moderators'
-      ]
+      ],
+      status: 'active'
     };
 
     // Create moderator user
@@ -44,7 +45,8 @@ const createDefaultAdmin = async () => {
         'view_mentors',
         'view_sessions',
         'view_reports'
-      ]
+      ],
+      status: 'active'
     };
 
     const admin = await Admin.findOne({ email: adminData.email });
