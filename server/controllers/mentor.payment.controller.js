@@ -16,6 +16,15 @@ export const addPaymentMethod = async (req, res, next) => {
   try {
     const { type, number, accountName, accountNumber, bankName, branchName } = req.body;
 
+    // Validate required fields based on type
+    if (type === 'bank') {
+      if (!accountName || !accountNumber || !bankName || !branchName) {
+        throw new ApiError(400, 'All bank account details are required');
+      }
+    } else if (!number) {
+      throw new ApiError(400, 'Mobile number is required for mobile banking methods');
+    }
+
     // Check if it's the first payment method for the user
     const existingMethods = await PaymentMethod.countDocuments({ userId: req.user.id });
     const isDefault = existingMethods === 0;
@@ -43,7 +52,7 @@ export const updatePaymentMethod = async (req, res, next) => {
     const method = await PaymentMethod.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id },
       req.body,
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     if (!method) {
@@ -119,94 +128,6 @@ export const getPaymentStats = async (req, res, next) => {
     });
   } catch (error) {
     logger.error('Get payment stats error:', error);
-    next(error);
-  }
-};
-
-export const getTransactions = async (req, res, next) => {
-  try {
-    const earnings = await Earning.find({ userId: req.user.id })
-      .populate('sessionId')
-      .sort({ createdAt: -1 });
-
-    const withdrawals = await Withdrawal.find({ userId: req.user.id })
-      .populate('paymentMethodId')
-      .sort({ createdAt: -1 });
-
-    // Combine and format transactions
-    const transactions = [
-      ...earnings.map(earning => ({
-        id: earning._id,
-        type: 'earning',
-        amount: earning.netAmount,
-        date: earning.createdAt,
-        status: earning.status,
-        description: `Session earnings - ${earning.sessionId?.topic || 'Unknown session'}`
-      })),
-      ...withdrawals.map(withdrawal => ({
-        id: withdrawal._id,
-        type: 'withdrawal',
-        amount: withdrawal.amount,
-        date: withdrawal.createdAt,
-        status: withdrawal.status,
-        description: `Withdrawal to ${withdrawal.paymentMethodId?.type === 'bank' 
-          ? `${withdrawal.paymentMethodId.bankName}`
-          : `${withdrawal.paymentMethodId.type.toUpperCase()}`}`
-      }))
-    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-    res.json(transactions);
-  } catch (error) {
-    logger.error('Get transactions error:', error);
-    next(error);
-  }
-};
-
-export const requestWithdrawal = async (req, res, next) => {
-  try {
-    const { amount, paymentMethodId } = req.body;
-
-    // Check minimum withdrawal amount
-    if (amount < 1000) {
-      throw new ApiError(400, 'Minimum withdrawal amount is ৳1,000');
-    }
-
-    // Check available balance
-    const availableBalance = await getAvailableBalance(req.user.id);
-    if (amount > availableBalance) {
-      throw new ApiError(400, 'Insufficient balance');
-    }
-
-    // Verify payment method exists and belongs to user
-    const paymentMethod = await PaymentMethod.findOne({
-      _id: paymentMethodId,
-      userId: req.user.id
-    });
-    if (!paymentMethod) {
-      throw new ApiError(404, 'Payment method not found');
-    }
-
-    const withdrawal = await Withdrawal.create({
-      userId: req.user.id,
-      amount,
-      paymentMethodId
-    });
-
-    res.status(201).json(withdrawal);
-  } catch (error) {
-    logger.error('Request withdrawal error:', error);
-    next(error);
-  }
-};
-
-export const getWithdrawals = async (req, res, next) => {
-  try {
-    const withdrawals = await Withdrawal.find({ userId: req.user.id })
-      .populate('paymentMethodId')
-      .sort({ createdAt: -1 });
-    res.json(withdrawals);
-  } catch (error) {
-    logger.error('Get withdrawals error:', error);
     next(error);
   }
 };
