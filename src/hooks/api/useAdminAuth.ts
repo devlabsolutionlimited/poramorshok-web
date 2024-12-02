@@ -36,7 +36,8 @@ export function useAdminAuth() {
     queryKey: ['admin-user'],
     queryFn: getAdminUser,
     enabled: !!localStorage.getItem('adminToken'),
-    retry: false
+    retry: false,
+    staleTime: 1000 * 60 * 5 // Cache for 5 minutes
   });
 
   const logout = () => {
