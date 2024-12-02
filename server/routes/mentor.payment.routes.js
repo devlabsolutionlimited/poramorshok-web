@@ -2,6 +2,7 @@ import express from 'express';
 import { body } from 'express-validator';
 import { protect, authorize } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import { ensureMentorProfile } from '../middleware/ensureMentorProfile.js';
 import {
   getPaymentMethods,
   addPaymentMethod,
@@ -12,9 +13,10 @@ import {
 
 const router = express.Router();
 
-// Protect all routes
+// Protect all routes and ensure mentor profile exists
 router.use(protect);
 router.use(authorize('mentor'));
+router.use(ensureMentorProfile);
 
 // Payment Stats
 router.get('/stats', getPaymentStats);
