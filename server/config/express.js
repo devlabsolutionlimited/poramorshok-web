@@ -9,6 +9,7 @@ import mentorRoutes from '../routes/mentor.routes.js';
 import mentorPaymentRoutes from '../routes/mentor.payment.routes.js';
 import mentorProfileRoutes from '../routes/mentor.profile.routes.js';
 import mentorAnalyticsRoutes from '../routes/mentor.analytics.routes.js';
+import mentorAvailabilityRoutes from '../routes/mentor.availability.routes.js';
 import sessionTypeRoutes from '../routes/session.type.routes.js';
 import sessionRoutes from '../routes/session.routes.js';
 import messageRoutes from '../routes/message.routes.js';
@@ -69,7 +70,8 @@ export const configureExpress = () => {
   app.use('/api/mentors', mentorRoutes);
   app.use('/api/mentor/payments', mentorPaymentRoutes);
   app.use('/api/mentor/profile', mentorProfileRoutes);
-  app.use('/api/mentors', mentorAnalyticsRoutes); // Changed from /api/mentor to /api/mentors
+  app.use('/api/mentors', mentorAnalyticsRoutes);
+  app.use('/api/mentor/availability', mentorAvailabilityRoutes);
   app.use('/api/session-types', sessionTypeRoutes);
   app.use('/api/sessions', sessionRoutes);
   app.use('/api/messages', messageRoutes);
