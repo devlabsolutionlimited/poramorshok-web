@@ -11,6 +11,18 @@ export const updateStudentProfile = async (data: Partial<StudentProfile>): Promi
   return response.data;
 };
 
+export const updateAvatar = async (file: File): Promise<{ avatar: string }> => {
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  const response = await api.put('/api/student/profile/avatar', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
 export const updateNotificationPreferences = async (preferences: {
   email: boolean;
   sessionReminders: boolean;
