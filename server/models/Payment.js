@@ -23,28 +23,36 @@ const paymentMethodSchema = new mongoose.Schema({
     }
   },
   // For bank accounts
-  accountName: String,
-  accountNumber: String,
-  bankName: String,
-  branchName: String,
+  accountName: {
+    type: String,
+    required: function() {
+      return this.type === 'bank';
+    }
+  },
+  accountNumber: {
+    type: String,
+    required: function() {
+      return this.type === 'bank';
+    }
+  },
+  bankName: {
+    type: String,
+    required: function() {
+      return this.type === 'bank';
+    }
+  },
+  branchName: {
+    type: String,
+    required: function() {
+      return this.type === 'bank';
+    }
+  },
   isDefault: {
     type: Boolean,
     default: false
   }
 }, {
   timestamps: true
-});
-
-// Ensure required fields based on type
-paymentMethodSchema.pre('save', function(next) {
-  if (this.type === 'bank') {
-    if (!this.accountName || !this.accountNumber || !this.bankName || !this.branchName) {
-      next(new Error('Bank account details are required'));
-    }
-  } else if (!this.number) {
-    next(new Error('Mobile number is required for mobile banking methods'));
-  }
-  next();
 });
 
 // Ensure only one default payment method per user
