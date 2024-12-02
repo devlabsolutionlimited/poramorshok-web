@@ -1,57 +1,16 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { PageLoader } from '@/components/ui/page-loader';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useStudentPayments } from '@/hooks/api/useStudentPayments';
 import RefundDialog from '@/components/payments/RefundDialog';
 import TransactionList from '@/components/payments/TransactionList';
-
-// Mock payment data
-const fetchPayments = async () => {
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  return {
-    transactions: [
-      {
-        id: '1',
-        date: '2024-03-20',
-        amount: 2000,
-        status: 'completed',
-        sessionStatus: 'completed',
-        description: 'Session with John Doe',
-        type: 'payment',
-        sessionId: 'session1'
-      },
-      {
-        id: '2',
-        date: '2024-03-15',
-        amount: 5000,
-        status: 'completed',
-        sessionStatus: 'cancelled',
-        description: 'Session with Sarah Ahmed',
-        type: 'payment',
-        sessionId: 'session2',
-        cancellationReason: 'Mentor unavailable'
-      }
-    ]
-  };
-};
-
-interface Transaction {
-  id: string;
-  date: string;
-  amount: number;
-  status: string;
-  sessionStatus: 'completed' | 'cancelled' | 'pending';
-  description: string;
-  type: string;
-  sessionId: string;
-  cancellationReason?: string;
-}
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowUpRight, ArrowDownRight, RefreshCcw } from 'lucide-react';
 
 export default function Payments() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { payments, stats, isLoading, requestRefund } = useStudentPayments();
   const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<{
     id: string;
@@ -60,12 +19,7 @@ export default function Payments() {
     cancellationReason?: string;
   } | null>(null);
 
-  const { data: payments, isLoading } = useQuery({
-    queryKey: ['payments'],
-    queryFn: fetchPayments
-  });
-
-  const handleRefundRequest = (transaction: Transaction) => {
+  const handleRefundRequest = (transaction: any) => {
     if (transaction.sessionStatus !== 'cancelled') {
       toast({
         title: 'Refund Not Available',
@@ -85,13 +39,12 @@ export default function Payments() {
   };
 
   const confirmRefund = async () => {
+    if (!selectedSession) return;
+
     try {
-      // API call would go here
-      console.log('Processing refund for session:', selectedSession);
-      
-      toast({
-        title: 'Refund Request Submitted',
-        description: 'Your refund request has been submitted and will be processed within 7 business days.',
+      await requestRefund({
+        sessionId: selectedSession.id,
+        reason: selectedSession.cancellationReason || 'Session cancelled'
       });
       
       setIsWarningModalOpen(false);
@@ -109,12 +62,60 @@ export default function Payments() {
     return <PageLoader />;
   }
 
+  if (!stats || !payments) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold">No Payment Data</h2>
+        <p className="text-muted-foreground">
+          Book your first session to see payment information here
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Payment History</h1>
 
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
+            <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">৳{stats.totalSpent}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.totalSessions} sessions
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Refunded Amount</CardTitle>
+            <ArrowDownRight className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">৳{stats.refundedAmount}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending Refunds</CardTitle>
+            <RefreshCcw className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {payments.filter(p => p.status === 'pending').length}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <TransactionList
-        transactions={payments?.transactions || []}
+        transactions={payments}
         isStudent={user?.role === 'student'}
         onRefundRequest={handleRefundRequest}
       />
