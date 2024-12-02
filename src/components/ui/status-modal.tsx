@@ -19,32 +19,36 @@ export function StatusModal({ isOpen, onClose, status, message }: StatusModalPro
     loading: {
       icon: Loader2,
       title: 'Processing',
-      className: 'text-blue-500 animate-spin'
+      color: 'text-blue-500',
+      spin: true
     },
     success: {
       icon: CheckCircle,
       title: 'Success',
-      className: 'text-green-500'
+      color: 'text-green-500',
+      spin: false
     },
     error: {
       icon: XCircle,
       title: 'Error',
-      className: 'text-red-500'
+      color: 'text-red-500',
+      spin: false
     }
   };
 
-  const Icon = statusConfig[status].icon;
+  const config = statusConfig[status];
+  const Icon = config.icon;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-            <Icon className={`h-6 w-6 ${statusConfig[status].className}`} />
+            <Icon 
+              className={`h-6 w-6 ${config.color} ${config.spin ? 'animate-spin' : ''}`} 
+            />
           </div>
-          <DialogTitle className="text-center pt-4">
-            {statusConfig[status].title}
-          </DialogTitle>
+          <DialogTitle className="text-center pt-4">{config.title}</DialogTitle>
           {message && (
             <DialogDescription className="text-center">
               {message}
