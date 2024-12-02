@@ -14,7 +14,6 @@ import {
 
 const router = express.Router();
 
-// Protect all routes and ensure mentor profile exists
 router.use(protect);
 router.use(authorize('mentor'));
 router.use(ensureMentorProfile);
