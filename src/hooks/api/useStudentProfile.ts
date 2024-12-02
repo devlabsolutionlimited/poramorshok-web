@@ -2,7 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   getStudentProfile, 
   updateStudentProfile,
-  updateNotificationPreferences
+  updateNotificationPreferences,
+  updateAvatar
 } from '@/lib/api/student-profile';
 import { useToast } from '@/hooks/use-toast';
 import type { StudentProfile } from '@/types/student';
@@ -34,6 +35,24 @@ export function useStudentProfile() {
     }
   });
 
+  const avatarMutation = useMutation({
+    mutationFn: updateAvatar,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student-profile'] });
+      toast({
+        title: 'Avatar Updated',
+        description: 'Your profile picture has been updated successfully.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update profile picture',
+        variant: 'destructive',
+      });
+    }
+  });
+
   const notificationMutation = useMutation({
     mutationFn: updateNotificationPreferences,
     onSuccess: () => {
@@ -57,7 +76,8 @@ export function useStudentProfile() {
     isLoading: query.isLoading,
     error: query.error,
     updateProfile: updateMutation.mutate,
+    updateAvatar: avatarMutation.mutate,
     updateNotifications: notificationMutation.mutate,
-    isUpdating: updateMutation.isPending || notificationMutation.isPending
+    isUpdating: updateMutation.isPending || avatarMutation.isPending || notificationMutation.isPending
   };
 }
